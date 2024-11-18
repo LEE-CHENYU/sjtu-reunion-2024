@@ -27,9 +27,13 @@ ChartJS.register(
 
 const chartOptions = {
   responsive: true,
+  maintainAspectRatio: false,
   plugins: {
     legend: {
       position: "bottom" as const,
+      labels: {
+        padding: 20
+      }
     },
   },
 };
@@ -142,26 +146,26 @@ export default function Dashboard() {
 
         <motion.div variants={fadeIn} className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card>
-            <CardHeader className="flex flex-col justify-between h-24">
+            <CardHeader className="flex flex-col justify-between pt-8 pb-2 h-28">
               <CardTitle className="text-lg">Total Responses</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-2">
               <p className="text-4xl font-bold">{summaryData?.totalResponses}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-col justify-between h-24">
+            <CardHeader className="flex flex-col justify-between pt-8 pb-2 h-28">
               <CardTitle className="text-lg">Average Budget</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-2">
               <p className="text-4xl font-bold">${summaryData?.averageBudget}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-col justify-between h-24">
+            <CardHeader className="flex flex-col justify-between pt-8 pb-2 h-28">
               <CardTitle className="text-lg">Couch Surfing Requests</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-2">
               <p className="text-4xl font-bold">{summaryData?.couchSurfingRequests}</p>
             </CardContent>
           </Card>
@@ -187,7 +191,7 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle>Location Distribution</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="h-[300px] flex items-center justify-center">
               <Pie
                 data={pieChartData(locationData || [])}
                 options={chartOptions}
@@ -199,7 +203,7 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle>Current Status Distribution</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="h-[300px] flex items-center justify-center">
               <Pie
                 data={pieChartData(currentStatusData || [])}
                 options={chartOptions}
@@ -211,7 +215,7 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle>Budget Distribution ($30-$200)</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="h-[300px] flex items-center justify-center">
               <Bar
                 data={barChartData(budgetData || [], "range")}
                 options={chartOptions}
@@ -223,7 +227,7 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle>Alcohol Preferences</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="h-[300px] flex items-center justify-center">
               <Bar
                 data={barChartData(alcoholData || [], "type")}
                 options={chartOptions}

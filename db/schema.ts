@@ -12,7 +12,7 @@ export const surveys = pgTable("surveys", {
   eventTypes: text("event_types").array().notNull(),
   venue: text("venue").array().notNull(),
   academicStatus: text("academic_status").notNull(),
-  availability: text("availability").notNull(),  // Will store stringified JSON
+  availability: text("availability").notNull(), // Stored as JSON string
   dietaryRestrictions: text("dietary_restrictions"),
   alcoholPreferences: text("alcohol_preferences").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -82,6 +82,12 @@ const alcoholPreferencesEnum = [
   "byob",
 ] as const;
 
+// Custom TimeSlot validation
+const timeSlotSchema = z.object({
+  date: z.date(),
+  times: z.array(z.string()),
+});
+
 export const insertSurveySchema = createInsertSchema(surveys, {
   budget: z.number().min(30).max(200),
   location: z.string().min(1).max(100),
@@ -90,10 +96,7 @@ export const insertSurveySchema = createInsertSchema(surveys, {
   eventTypes: z.array(z.enum(eventTypeEnum)).min(1),
   venue: z.array(z.enum(venueEnum)).min(1),
   academicStatus: z.enum(currentStatusEnum),
-  availability: z.array(z.object({
-    date: z.date(),
-    times: z.array(z.string())
-  })),
+  availability: z.string(), // Will store stringified TimeSlot array
   dietaryRestrictions: z.string().optional(),
   alcoholPreferences: z.enum(alcoholPreferencesEnum),
 });

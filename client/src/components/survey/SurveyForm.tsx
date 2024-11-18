@@ -88,7 +88,6 @@ type VenueType = typeof VENUES[number]["id"];
 
 interface FormValues extends Omit<Survey, 'availability'> {
   availability: TimeSlot[];
-  specialInterests: string;
 }
 
 export function SurveyForm({ onComplete }: SurveyFormProps) {
@@ -102,13 +101,13 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
       budget: 30,
       location: "",
       transportation: "",
+      needsCouchSurfing: false,
       eventTypes: ["networking"] as EventType[],
       venue: ["restaurants"] as VenueType[],
       academicStatus: "masters",
       availability: [],
       dietaryRestrictions: "",
       alcoholPreferences: "none",
-      specialInterests: "",
     },
   });
 
@@ -237,6 +236,33 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             />
           )}
 
+          {/* Couch Surfing Field - Only show if not from New York */}
+          {location && location.toLowerCase() !== "new york" && (
+            <FormField
+              control={form.control}
+              name="needsCouchSurfing"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Do you need couch surfing?</FormLabel>
+                  <FormControl>
+                    <div className="flex items-start space-x-3 space-y-0 p-4 border rounded-md">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <div className="space-y-1 leading-none">
+                        <FormDescription>
+                          Check this if you need accommodation assistance during the event
+                        </FormDescription>
+                      </div>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
           {/* Event Types Field */}
           <FormField
             control={form.control}
@@ -273,6 +299,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             )}
           />
 
+          {/* Rest of the form fields... */}
           {/* Venue Preferences Field */}
           <FormField
             control={form.control}
@@ -455,13 +482,13 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className="flex flex-col space-y-1"
+                    value={field.value}
+                    className="grid grid-cols-2 gap-4"
                   >
                     {ALCOHOL_PREFERENCES.map((pref) => (
                       <FormItem
                         key={pref.id}
-                        className="flex items-center space-x-3 space-y-0"
+                        className="flex items-center space-x-2"
                       >
                         <FormControl>
                           <RadioGroupItem value={pref.id} />
@@ -477,28 +504,12 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
               </FormItem>
             )}
           />
-          
-          {/* Special Interests Field */}
-          <FormField
-            control={form.control}
-            name="specialInterests"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Special Interests</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your special interests" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
 
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-md hover:shadow-lg transition-all duration-200"
+            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white"
           >
-            Submit Survey 🎈
+            Submit Survey
           </Button>
         </motion.div>
       </form>

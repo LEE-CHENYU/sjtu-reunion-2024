@@ -43,7 +43,7 @@ export default function Survey() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          Event Survey 🎉
+          SJTU Reunion Survey 🎉
         </motion.h1>
         <SurveyForm onComplete={handleComplete} />
       </motion.div>

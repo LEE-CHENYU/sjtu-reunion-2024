@@ -129,7 +129,7 @@ export default function Dashboard() {
         animate="animate"
         className="max-w-7xl mx-auto space-y-8"
       >
-        <h1 className="text-4xl font-bold text-white mb-8">Analytics Dashboard 📊</h1>
+        <h1 className="text-4xl font-bold text-white mb-8">SJTU Reunion Analytics 📊</h1>
 
         <motion.div variants={fadeIn} className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>

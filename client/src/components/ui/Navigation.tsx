@@ -10,7 +10,7 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16">
           <Link href="/">
             <Button variant="ghost" className="text-white hover:bg-white/20">
-              🎈 Party Planner
+              🎈 SJTU Reunion
             </Button>
           </Link>
           <div className="flex space-x-4">

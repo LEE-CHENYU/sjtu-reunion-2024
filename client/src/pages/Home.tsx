@@ -11,8 +11,8 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center text-white"
         >
-          <h1 className="text-6xl font-bold mb-8">✨ Party Planner Pro</h1>
-          <p className="text-xl mb-12">Plan your perfect event and join our vibrant community!</p>
+          <h1 className="text-6xl font-bold mb-8">✨ SJTU北美互助会2024 Reunion</h1>
+          <p className="text-xl mb-12">Join us for the SJTU North America Alumni reunion and help shape our gathering!</p>
           
           <div className="flex gap-6 justify-center">
             <Link href="/survey">

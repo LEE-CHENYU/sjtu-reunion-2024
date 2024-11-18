@@ -142,24 +142,24 @@ export default function Dashboard() {
 
         <motion.div variants={fadeIn} className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Total Responses</CardTitle>
+            <CardHeader className="flex flex-col justify-between h-24">
+              <CardTitle className="text-lg">Total Responses</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-4xl font-bold">{summaryData?.totalResponses}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader>
-              <CardTitle>Average Budget</CardTitle>
+            <CardHeader className="flex flex-col justify-between h-24">
+              <CardTitle className="text-lg">Average Budget</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-4xl font-bold">${summaryData?.averageBudget}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader>
-              <CardTitle>Couch Surfing Requests</CardTitle>
+            <CardHeader className="flex flex-col justify-between h-24">
+              <CardTitle className="text-lg">Couch Surfing Requests</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-4xl font-bold">{summaryData?.couchSurfingRequests}</p>

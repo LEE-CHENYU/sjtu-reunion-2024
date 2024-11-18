@@ -83,12 +83,9 @@ interface SurveyFormProps {
   onComplete: () => void;
 }
 
-type EventType = typeof EVENT_TYPES[number]["id"];
-type VenueType = typeof VENUES[number]["id"];
-
-interface FormValues extends Omit<Survey, 'availability'> {
+type FormValues = Omit<Survey, 'availability'> & {
   availability: TimeSlot[];
-}
+};
 
 export function SurveyForm({ onComplete }: SurveyFormProps) {
   const { toast } = useToast();
@@ -102,8 +99,8 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
       location: "",
       transportation: "",
       needsCouchSurfing: false,
-      eventTypes: ["networking"] as EventType[],
-      venue: ["restaurants"] as VenueType[],
+      eventTypes: ["networking"],
+      venue: ["restaurants"],
       academicStatus: "masters",
       availability: [],
       dietaryRestrictions: "",
@@ -113,7 +110,6 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
 
   const onSubmit = async (data: FormValues) => {
     try {
-      // Convert the TimeSlot array to a JSON string for storage
       const surveyData: Survey = {
         ...data,
         availability: JSON.stringify(data.availability),
@@ -299,7 +295,6 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             )}
           />
 
-          {/* Rest of the form fields... */}
           {/* Venue Preferences Field */}
           <FormField
             control={form.control}
@@ -385,17 +380,19 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent 
+                    className="w-screen h-[80vh] sm:w-auto sm:h-auto p-0" 
+                    align="start"
+                    side="bottom"
+                  >
                     <Calendar
                       mode="multiple"
                       selected={field.value.map(slot => slot.date)}
                       onSelect={(dates) => {
-                        // Keep existing time selections for dates that are still selected
                         const existingSlots = field.value.filter(slot =>
                           dates?.some(d => format(d, 'yyyy-MM-dd') === format(slot.date, 'yyyy-MM-dd'))
                         );
                         
-                        // Add new dates without time selections
                         const newDates = dates?.filter(date =>
                           !field.value.some(slot => format(slot.date, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))
                         ) || [];
@@ -412,17 +409,17 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                       className="rounded-md border"
                     />
                     
-                    <div className="max-h-[300px] overflow-y-auto">
+                    <div className="max-h-[300px] overflow-y-auto p-4">
                       {field.value.map((slot, index) => (
-                        <div key={format(slot.date, 'yyyy-MM-dd')} className="p-3 border-t">
-                          <h4 className="font-medium mb-2">
+                        <div key={format(slot.date, 'yyyy-MM-dd')} className="mb-6 last:mb-0">
+                          <h4 className="font-medium mb-3">
                             {format(slot.date, 'EEEE, MMMM d, yyyy')}
                           </h4>
-                          <div className="grid grid-cols-4 gap-2">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             {TIME_OPTIONS.map((time) => (
                               <label
                                 key={time}
-                                className="flex items-center space-x-2"
+                                className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded"
                               >
                                 <Checkbox
                                   checked={slot.times.includes(time)}
@@ -436,7 +433,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                                     field.onChange(newValue);
                                   }}
                                 />
-                                <span className="text-sm">{time}</span>
+                                <span className="text-sm whitespace-nowrap">{time}</span>
                               </label>
                             ))}
                           </div>
@@ -505,12 +502,17 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             )}
           />
 
-          <Button
-            type="submit"
-            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white"
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            Submit Survey
-          </Button>
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md hover:shadow-lg transition-all duration-200"
+            >
+              Submit Survey 🎉
+            </Button>
+          </motion.div>
         </motion.div>
       </form>
     </Form>

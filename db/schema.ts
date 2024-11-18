@@ -82,12 +82,6 @@ const alcoholPreferencesEnum = [
   "byob",
 ] as const;
 
-// Custom TimeSlot validation
-const timeSlotSchema = z.object({
-  date: z.date(),
-  times: z.array(z.string()),
-});
-
 export const insertSurveySchema = createInsertSchema(surveys, {
   budget: z.number().min(30).max(200),
   location: z.string().min(1).max(100),
@@ -96,7 +90,7 @@ export const insertSurveySchema = createInsertSchema(surveys, {
   eventTypes: z.array(z.enum(eventTypeEnum)).min(1),
   venue: z.array(z.enum(venueEnum)).min(1),
   academicStatus: z.enum(currentStatusEnum),
-  availability: z.string(), // Will store stringified TimeSlot array
+  availability: z.string(), // This expects stringified array
   dietaryRestrictions: z.string().optional(),
   alcoholPreferences: z.enum(alcoholPreferencesEnum),
 });

@@ -2,7 +2,7 @@ import { Express } from "express";
 import { db } from "db";
 import { surveys, posts, comments, reactions } from "db/schema";
 import { sql } from "drizzle-orm";
-import { eq, desc, count } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export function registerRoutes(app: Express) {
   // Survey routes
@@ -95,6 +95,23 @@ export function registerRoutes(app: Express) {
       res.json(labeledDistribution);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch academic status analytics" });
+    }
+  });
+
+  app.get("/api/analytics/location", async (req, res) => {
+    try {
+      const distribution = await db
+        .select({
+          type: surveys.location,
+          count: sql<number>`count(*)`,
+        })
+        .from(surveys)
+        .groupBy(surveys.location)
+        .orderBy(desc(sql`count(*)`));
+
+      res.json(distribution);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch location analytics" });
     }
   });
 

@@ -60,14 +60,18 @@ export default function Dashboard() {
   const { data: budgetData, error: budgetError } = useSWR<ChartData[]>(
     "/api/analytics/budget"
   );
+  const { data: locationData, error: locationError } = useSWR<ChartData[]>(
+    "/api/analytics/location"
+  );
 
   const isLoading =
     !summaryData && !summaryError ||
     !eventTypeData && !eventTypeError ||
     !currentStatusData && !currentStatusError ||
-    !budgetData && !budgetError;
+    !budgetData && !budgetError ||
+    !locationData && !locationError;
 
-  const hasError = summaryError || eventTypeError || currentStatusError || budgetError;
+  const hasError = summaryError || eventTypeError || currentStatusError || budgetError || locationError;
 
   if (isLoading) {
     return (
@@ -138,7 +142,7 @@ export default function Dashboard() {
               <CardTitle>Total Responses</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-4xl font-bold">{summaryData.totalResponses}</p>
+              <p className="text-4xl font-bold">{summaryData?.totalResponses}</p>
             </CardContent>
           </Card>
           <Card>
@@ -146,7 +150,7 @@ export default function Dashboard() {
               <CardTitle>Average Budget</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-4xl font-bold">${summaryData.averageBudget}</p>
+              <p className="text-4xl font-bold">${summaryData?.averageBudget}</p>
             </CardContent>
           </Card>
           <Card>
@@ -154,7 +158,7 @@ export default function Dashboard() {
               <CardTitle>Couch Surfing Requests</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-4xl font-bold">{summaryData.couchSurfingRequests}</p>
+              <p className="text-4xl font-bold">{summaryData?.couchSurfingRequests}</p>
             </CardContent>
           </Card>
           <Card>
@@ -163,7 +167,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {summaryData.popularEventTypes.map((type) => (
+                {summaryData?.popularEventTypes.map((type) => (
                   <li key={type.type} className="flex justify-between">
                     <span>{type.type}</span>
                     <span className="font-bold">{type.count}</span>
@@ -181,7 +185,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <Pie
-                data={pieChartData(eventTypeData)}
+                data={pieChartData(eventTypeData || [])}
                 options={chartOptions}
               />
             </CardContent>
@@ -193,7 +197,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <Pie
-                data={pieChartData(currentStatusData)}
+                data={pieChartData(currentStatusData || [])}
                 options={chartOptions}
               />
             </CardContent>
@@ -205,7 +209,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <Bar
-                data={barChartData(budgetData, "range")}
+                data={barChartData(budgetData || [], "range")}
                 options={chartOptions}
               />
             </CardContent>
@@ -213,11 +217,11 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Event Type Preferences</CardTitle>
+              <CardTitle>Location Distribution</CardTitle>
             </CardHeader>
             <CardContent>
-              <Bar
-                data={pieChartData(eventTypeData)}
+              <Pie
+                data={pieChartData(locationData || [])}
                 options={chartOptions}
               />
             </CardContent>

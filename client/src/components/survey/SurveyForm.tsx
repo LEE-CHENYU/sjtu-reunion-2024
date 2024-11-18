@@ -88,6 +88,7 @@ type VenueType = typeof VENUES[number]["id"];
 
 interface FormValues extends Omit<Survey, 'availability'> {
   availability: TimeSlot[];
+  specialInterests: string;
 }
 
 export function SurveyForm({ onComplete }: SurveyFormProps) {
@@ -107,6 +108,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
       availability: [],
       dietaryRestrictions: "",
       alcoholPreferences: "none",
+      specialInterests: "",
     },
   });
 
@@ -475,6 +477,22 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
               </FormItem>
             )}
           />
+          
+          {/* Special Interests Field */}
+          <FormField
+            control={form.control}
+            name="specialInterests"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Special Interests</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter your special interests" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
 
           <Button
             type="submit"

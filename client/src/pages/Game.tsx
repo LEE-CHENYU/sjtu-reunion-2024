@@ -193,14 +193,18 @@ function GameComponent() {
               <CardContent className="p-0">
                 <div className="h-[600px] rounded-lg overflow-hidden">
                   <MapContainer
-                    center={[31.2304, 121.4737]}  // Center of Shanghai
-                    zoom={11}  // Show more of the city
+                    center={[31.2304, 121.4737]}
+                    zoom={11}
                     style={{ height: "100%", width: "100%" }}
-                    maxBounds={[[30.7, 121.0], [31.5, 122.0]]}  // Keep current bounds
-                    minZoom={10}  // Ensure entire city is visible
-                    maxZoom={16}  // Limit maximum zoom
+                    maxBounds={[[30.7, 121.0], [31.5, 122.0]]}
+                    minZoom={11}
+                    maxZoom={11}
                     zoomControl={false}
                     attributionControl={false}
+                    scrollWheelZoom={false}
+                    doubleClickZoom={false}
+                    touchZoom={false}
+                    dragging={true}
                   >
                     <TileLayer
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -35,11 +35,11 @@ function calculateDistance(guess: { lat: number; lng: number }, target: { lat: n
   const R = 6371; // Earth's radius in km
   const dLat = (target.lat - guess.lat) * Math.PI / 180;
   const dLon = (target.lng - guess.lng) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(guess.lat * Math.PI / 180) * Math.cos(target.lat * Math.PI / 180) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(guess.lat * Math.PI / 180) * Math.cos(target.lat * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
 
@@ -66,7 +66,7 @@ function GameComponent() {
 
   const handleMapClick = (latlng: LatLng) => {
     if (gameState.isGameOver) return;
-    
+
     setGameState(prev => ({
       ...prev,
       guessPosition: { lat: latlng.lat, lng: latlng.lng },
@@ -113,9 +113,8 @@ function GameComponent() {
 
   // Custom marker icons
   const guessIcon = new Icon({
-    iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
-    iconRetinaUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
-    shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
+    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
@@ -124,7 +123,7 @@ function GameComponent() {
 
   const targetIcon = new Icon({
     iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
-    shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
@@ -199,15 +198,18 @@ function GameComponent() {
                     style={{ height: "100%", width: "100%" }}
                     maxBounds={[[30.7, 121.0], [31.5, 122.0]]}
                     minZoom={12}
+                    zoomControl={false}
+                    attributionControl={false}
                   >
                     <TileLayer
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      opacity={0.6}
                     />
                     <MapEvents onMapClick={handleMapClick} />
-                    
+
                     {gameState.guessPosition && (
-                      <Marker 
+                      <Marker
                         position={[gameState.guessPosition.lat, gameState.guessPosition.lng]}
                         icon={guessIcon}
                       >
@@ -216,7 +218,7 @@ function GameComponent() {
                     )}
 
                     {gameState.showTarget && (
-                      <Marker 
+                      <Marker
                         position={[TARGET_LOCATION.lat, TARGET_LOCATION.lng]}
                         icon={targetIcon}
                       >

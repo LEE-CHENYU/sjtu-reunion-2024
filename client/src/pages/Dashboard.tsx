@@ -117,7 +117,7 @@ export default function Dashboard() {
     ],
   });
 
-  const barChartData = (data: ChartData[], labelKey: "range") => ({
+  const barChartData = (data: ChartData[], labelKey: "type" | "range") => ({
     labels: data.map((item) => item[labelKey]),
     datasets: [
       {
@@ -224,8 +224,8 @@ export default function Dashboard() {
               <CardTitle>Alcohol Preferences</CardTitle>
             </CardHeader>
             <CardContent>
-              <Pie
-                data={pieChartData(alcoholData || [])}
+              <Bar
+                data={barChartData(alcoholData || [], "type")}
                 options={chartOptions}
               />
             </CardContent>

@@ -34,7 +34,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { useLocation } from "wouter";
 
 const EVENT_TYPES = [
   { id: "networking", label: "Professional Networking" },
@@ -80,7 +79,6 @@ interface FormValues extends Omit<Survey, 'availability'> {
 
 export function SurveyForm({ onComplete }: SurveyFormProps) {
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(insertSurveySchema),
@@ -100,17 +98,22 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
 
   const onSubmit = async (data: FormValues) => {
     try {
-      // Store form data in localStorage
+      // Store form data in localStorage with proper error handling
+      if (!data) {
+        throw new Error("Form data is empty");
+      }
+      
       localStorage.setItem("surveyFormData", JSON.stringify(data));
       
-      // Navigate to time slots selection
-      setLocation('/survey/time-slots');
+      // Force navigation to time slots page
+      window.location.href = '/survey/time-slots';
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to save form data. Please try again.",
         variant: "destructive",
       });
+      console.error("Form submission error:", error);
     }
   };
 

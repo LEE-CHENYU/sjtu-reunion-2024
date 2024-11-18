@@ -100,16 +100,45 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
 
   const onSubmit = async (data: FormValues) => {
     try {
-      if (!data) {
-        throw new Error("Form data is empty");
+      // Validate required fields
+      if (!data.email || !data.location || !data.eventTypes.length) {
+        toast({
+          title: "Missing Information",
+          description: "Please fill in all required fields before continuing.",
+          variant: "destructive"
+        });
+        return;
       }
-      localStorage.setItem("surveyFormData", JSON.stringify(data));
+
+      // Validate email format
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+        toast({
+          title: "Invalid Email",
+          description: "Please enter a valid email address.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Try to store in localStorage
+      try {
+        localStorage.setItem("surveyFormData", JSON.stringify(data));
+      } catch (storageError) {
+        toast({
+          title: "Storage Error",
+          description: "Unable to save form data. Please check your browser settings.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Navigate to time slots page
       setLocation('/survey/time-slots');
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to save form data. Please try again.",
-        variant: "destructive",
+        description: "Failed to proceed. Please try again or refresh the page.",
+        variant: "destructive"
       });
       console.error("Form submission error:", error);
     }

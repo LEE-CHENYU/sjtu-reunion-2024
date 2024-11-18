@@ -47,3 +47,28 @@ export const slideIn: Variants = {
     }
   }
 };
+
+export const scrollFadeIn: Variants = {
+  initial: { opacity: 0, y: 50 },
+  animate: (custom: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: custom * 0.2,
+      duration: 0.6,
+      ease: "easeOut"
+    }
+  })
+};
+
+export const scrollColorTransition = (progress: number) => ({
+  background: `linear-gradient(to br, 
+    hsl(210, ${85 + progress * 10}%, ${60 + progress * 5}%),
+    hsl(220, ${85 + progress * 5}%, ${60 + progress * 10}%)
+  )`
+});
+
+export const parallaxEffect = (scrollProgress: number) => ({
+  y: scrollProgress * 30,
+  transition: { type: "spring", stiffness: 100 }
+});

@@ -383,35 +383,37 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                       className="rounded-md border"
                     />
                     
-                    {field.value.map((slot, index) => (
-                      <div key={format(slot.date, 'yyyy-MM-dd')} className="p-3 border-t">
-                        <h4 className="font-medium mb-2">
-                          {format(slot.date, 'EEEE, MMMM d, yyyy')}
-                        </h4>
-                        <div className="grid grid-cols-4 gap-2">
-                          {TIME_OPTIONS.map((time) => (
-                            <label
-                              key={time}
-                              className="flex items-center space-x-2"
-                            >
-                              <Checkbox
-                                checked={slot.times.includes(time)}
-                                onCheckedChange={(checked) => {
-                                  const newValue = [...field.value];
-                                  if (checked) {
-                                    newValue[index].times = [...slot.times, time];
-                                  } else {
-                                    newValue[index].times = slot.times.filter(t => t !== time);
-                                  }
-                                  field.onChange(newValue);
-                                }}
-                              />
-                              <span className="text-sm">{time}</span>
-                            </label>
-                          ))}
+                    <div className="max-h-[300px] overflow-y-auto">
+                      {field.value.map((slot, index) => (
+                        <div key={format(slot.date, 'yyyy-MM-dd')} className="p-3 border-t">
+                          <h4 className="font-medium mb-2">
+                            {format(slot.date, 'EEEE, MMMM d, yyyy')}
+                          </h4>
+                          <div className="grid grid-cols-4 gap-2">
+                            {TIME_OPTIONS.map((time) => (
+                              <label
+                                key={time}
+                                className="flex items-center space-x-2"
+                              >
+                                <Checkbox
+                                  checked={slot.times.includes(time)}
+                                  onCheckedChange={(checked) => {
+                                    const newValue = [...field.value];
+                                    if (checked) {
+                                      newValue[index].times = [...slot.times, time];
+                                    } else {
+                                      newValue[index].times = slot.times.filter(t => t !== time);
+                                    }
+                                    field.onChange(newValue);
+                                  }}
+                                />
+                                <span className="text-sm">{time}</span>
+                              </label>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </PopoverContent>
                 </Popover>
                 <FormDescription>

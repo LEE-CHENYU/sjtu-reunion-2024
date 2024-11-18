@@ -181,11 +181,11 @@ export default function Dashboard() {
         <motion.div variants={fadeIn} className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <Card>
             <CardHeader>
-              <CardTitle>Event Interests Distribution</CardTitle>
+              <CardTitle>Location Distribution</CardTitle>
             </CardHeader>
             <CardContent>
               <Pie
-                data={pieChartData(eventTypeData || [])}
+                data={pieChartData(locationData || [])}
                 options={chartOptions}
               />
             </CardContent>
@@ -210,18 +210,6 @@ export default function Dashboard() {
             <CardContent>
               <Bar
                 data={barChartData(budgetData || [], "range")}
-                options={chartOptions}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Location Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Pie
-                data={pieChartData(locationData || [])}
                 options={chartOptions}
               />
             </CardContent>

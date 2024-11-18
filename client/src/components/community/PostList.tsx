@@ -11,7 +11,11 @@ import type { Post, Comment, Reaction } from "db/schema";
 const EMOJI_REACTIONS = ["👍", "❤️", "🎉", "🎪", "🎭"];
 
 export function PostList() {
-  const { data: posts, mutate } = useSWR<Post[]>("/api/posts");
+  const { data: posts, mutate } = useSWR<Post[]>("/api/posts", {
+    refreshInterval: 2000, // Poll every 2 seconds
+    revalidateOnFocus: true,
+    refreshWhenHidden: false,
+  });
   const { toast } = useToast();
   const [activeComment, setActiveComment] = useState<number | null>(null);
   const [commentText, setCommentText] = useState("");
@@ -71,12 +75,16 @@ export function PostList() {
       animate="animate"
       className="space-y-6"
     >
-      <AnimatePresence>
+      <AnimatePresence mode="popLayout">
         {posts.map((post) => (
           <motion.div
             key={post.id}
             variants={fadeIn}
             layout
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
           >
             <Card className="p-6 hover:shadow-lg transition-shadow">
               <h3 className="text-xl font-bold mb-2">{post.title}</h3>

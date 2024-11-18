@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { fadeIn, bounceHover } from "@/lib/animations";
+import { mutate } from "swr";
 
 export function CreatePost({ onPostCreated }: { onPostCreated: () => void }) {
   const { toast } = useToast();
@@ -47,6 +48,7 @@ export function CreatePost({ onPostCreated }: { onPostCreated: () => void }) {
         description: "Your post has been published.",
       });
       form.reset();
+      mutate("/api/posts"); // Add mutate call to refresh posts
       onPostCreated();
     } catch (error) {
       toast({

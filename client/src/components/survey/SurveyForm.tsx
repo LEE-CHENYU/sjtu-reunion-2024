@@ -299,7 +299,6 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             )}
           />
 
-          {/* Rest of the form fields... */}
           {/* Venue Preferences Field */}
           <FormField
             control={form.control}
@@ -505,9 +504,10 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             )}
           />
 
+          {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white"
+            className="w-full bg-gradient-to-r from-blue-400 to-blue-600 text-white"
           >
             Submit Survey
           </Button>

@@ -26,7 +26,7 @@ export default function Survey() {
 
   return (
     <div 
-      className="min-h-screen p-8 transition-colors duration-300"
+      className="min-h-screen p-8 pt-20 transition-colors duration-300"
       style={scrollColorTransition(scrollProgress)}
     >
       {showConfetti && <Confetti />}

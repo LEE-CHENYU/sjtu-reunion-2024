@@ -7,10 +7,13 @@ export const surveys = pgTable("surveys", {
   email: text("email").notNull(),
   budget: integer("budget").notNull(),
   location: text("location").notNull(),
-  eventType: text("event_type").notNull(),
-  venue: text("venue").notNull(),
-  date: text("date").notNull(),
-  preferences: text("preferences").notNull(),
+  transportation: text("transportation").notNull(),
+  eventTypes: text("event_types").array().notNull(),
+  venue: text("venue").array().notNull(),
+  academicStatus: text("academic_status").notNull(),
+  availability: text("availability").notNull(),
+  dietaryRestrictions: text("dietary_restrictions"),
+  alcoholPreferences: text("alcohol_preferences").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -39,7 +42,50 @@ export const reactions = pgTable("reactions", {
   authorId: text("author_id").notNull(),
 });
 
-export const insertSurveySchema = createInsertSchema(surveys);
+const eventTypeEnum = [
+  "career",
+  "academic",
+  "social",
+  "dating",
+  "entertainment",
+] as const;
+
+const venueEnum = [
+  "restaurants",
+  "pubs",
+  "clubs",
+  "event_spaces",
+] as const;
+
+const academicStatusEnum = [
+  "undergraduate",
+  "graduate",
+  "postdoc",
+  "faculty",
+  "staff",
+  "alumni",
+  "other",
+] as const;
+
+const alcoholPreferencesEnum = [
+  "none",
+  "beer_wine",
+  "full_bar",
+  "byob",
+] as const;
+
+export const insertSurveySchema = createInsertSchema(surveys, {
+  budget: z.number().min(0).max(10000),
+  location: z.string().min(1).max(100),
+  transportation: z.string().min(1),
+  eventTypes: z.array(z.enum(eventTypeEnum)).min(1),
+  venue: z.array(z.enum(venueEnum)).min(1),
+  academicStatus: z.enum(academicStatusEnum),
+  availability: z.string().min(1),
+  dietaryRestrictions: z.string().optional(),
+  alcoholPreferences: z.enum(alcoholPreferencesEnum),
+});
+
 export const selectSurveySchema = createSelectSchema(surveys);
 export const insertPostSchema = createInsertSchema(posts);
 export const selectPostSchema = createSelectSchema(posts);

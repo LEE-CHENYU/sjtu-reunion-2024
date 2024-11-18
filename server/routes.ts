@@ -15,6 +15,30 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  // Game routes
+  app.post("/api/game/score", async (req, res) => {
+    try {
+      const { distance, attempts } = req.body;
+      const [score] = await db.execute(
+        sql`INSERT INTO game_scores (distance, attempts) VALUES (${distance}, ${attempts}) RETURNING *`
+      );
+      res.json(score);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to save game score" });
+    }
+  });
+
+  app.get("/api/game/leaderboard", async (req, res) => {
+    try {
+      const scores = await db.execute<{ id: number; distance: number; attempts: number; created_at: string }>(
+        sql`SELECT * FROM game_scores ORDER BY distance ASC, attempts ASC LIMIT 10`
+      );
+      res.json(scores);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch leaderboard" });
+    }
+  });
+
   // Analytics routes
   app.get("/api/analytics/summary", async (req, res) => {
     try {

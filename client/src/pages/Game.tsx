@@ -1,173 +1,135 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
+import { Icon, LatLng } from "leaflet";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import useSWR, { mutate } from "swr";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-const BOAT_SIZE = 20;
-const BOAT_SPEED = 3;
-const WATER_COLOR = "#4A90E2";
-
-// Load map image
-const MAP_IMAGE = new Image();
-MAP_IMAGE.src = "/1125e4cf-c2cb-464a-af2d-c58fbb286e4a.jpg";
-
-// Add error handling for image loading
-MAP_IMAGE.onerror = () => {
-  console.error('Failed to load map image');
+// Target location coordinates
+const TARGET_LOCATION = {
+  lat: 31.017969,
+  lng: 121.430860,
+  name: "拖鞋门"
 };
 
 interface GameState {
-  x: number;
-  y: number;
-  dx: number;
-  dy: number;
-  score: number;
-  isInWater: boolean;
+  guessPosition: { lat: number; lng: number } | null;
+  distance: number | null;
+  attempts: number;
+  bestDistance: number;
+  isGameOver: boolean;
+  showTarget: boolean;
 }
 
-export default function Game() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const collisionCanvasRef = useRef<HTMLCanvasElement>(null);
+interface Score {
+  id: number;
+  distance: number;
+  attempts: number;
+  created_at: string;
+}
+
+// Calculate distance between two points in kilometers
+function calculateDistance(guess: { lat: number; lng: number }, target: { lat: number; lng: number }): number {
+  const R = 6371; // Earth's radius in km
+  const dLat = (target.lat - guess.lat) * Math.PI / 180;
+  const dLon = (target.lng - guess.lng) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(guess.lat * Math.PI / 180) * Math.cos(target.lat * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+function MapEvents({ onMapClick }: { onMapClick: (latlng: LatLng) => void }) {
+  useMapEvents({
+    click: (e) => {
+      onMapClick(e.latlng);
+    },
+  });
+  return null;
+}
+
+function GameComponent() {
   const [gameState, setGameState] = useState<GameState>({
-    x: 100,
-    y: 100,
-    dx: 0,
-    dy: 0,
-    score: 0,
-    isInWater: true
+    guessPosition: null,
+    distance: null,
+    attempts: 0,
+    bestDistance: Infinity,
+    isGameOver: false,
+    showTarget: false,
   });
 
-  const keys = useRef(new Set<string>());
+  const { data: leaderboard } = useSWR<Score[]>("/api/game/leaderboard");
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const collisionCanvas = collisionCanvasRef.current;
-    if (!canvas || !collisionCanvas) return;
+  const handleMapClick = (latlng: LatLng) => {
+    if (gameState.isGameOver) return;
+    
+    setGameState(prev => ({
+      ...prev,
+      guessPosition: { lat: latlng.lat, lng: latlng.lng },
+    }));
+  };
 
-    const ctx = canvas.getContext("2d");
-    const collisionCtx = collisionCanvas.getContext("2d");
-    if (!ctx || !collisionCtx) return;
+  const handleSubmitGuess = async () => {
+    if (!gameState.guessPosition) return;
 
-    // Set canvas size
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth * 0.8;
-      canvas.height = window.innerHeight * 0.8;
-      collisionCanvas.width = canvas.width;
-      collisionCanvas.height = canvas.height;
-    };
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    const distance = calculateDistance(gameState.guessPosition, TARGET_LOCATION);
+    const attempts = gameState.attempts + 1;
+    const bestDistance = Math.min(distance, gameState.bestDistance);
 
-    // Initialize collision detection canvas
-    const initCollisionCanvas = () => {
-      collisionCtx.drawImage(MAP_IMAGE, 0, 0, collisionCanvas.width, collisionCanvas.height);
-    };
+    // Save score to the database
+    await fetch("/api/game/score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ distance, attempts }),
+    });
 
-    // Check if a point is in water
-    const checkWaterCollision = (x: number, y: number): boolean => {
-      const pixel = collisionCtx.getImageData(x, y, 1, 1).data;
-      return pixel[2] > 150 && pixel[0] < 100; // Check for blue-ish colors
-    };
+    // Update leaderboard
+    mutate("/api/game/leaderboard");
 
-    // Handle keyboard input
-    const handleKeyDown = (e: KeyboardEvent) => {
-      keys.current.add(e.key);
-    };
+    setGameState(prev => ({
+      ...prev,
+      distance,
+      attempts,
+      bestDistance,
+      isGameOver: true,
+      showTarget: true,
+    }));
+  };
 
-    const handleKeyUp = (e: KeyboardEvent) => {
-      keys.current.delete(e.key);
-    };
+  const handleTryAgain = () => {
+    setGameState({
+      guessPosition: null,
+      distance: null,
+      attempts: gameState.attempts,
+      bestDistance: gameState.bestDistance,
+      isGameOver: false,
+      showTarget: false,
+    });
+  };
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+  // Custom marker icons
+  const guessIcon = new Icon({
+    iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+    iconRetinaUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
 
-    // Game loop
-    let animationId: number;
-    const gameLoop = () => {
-      // Update position based on input
-      let dx = gameState.dx;
-      let dy = gameState.dy;
-
-      if (keys.current.has('ArrowLeft')) dx = -BOAT_SPEED;
-      if (keys.current.has('ArrowRight')) dx = BOAT_SPEED;
-      if (keys.current.has('ArrowUp')) dy = -BOAT_SPEED;
-      if (keys.current.has('ArrowDown')) dy = BOAT_SPEED;
-
-      // Apply physics (simple momentum)
-      const friction = 0.95;
-      dx *= friction;
-      dy *= friction;
-
-      // Calculate new position
-      let newX = gameState.x + dx;
-      let newY = gameState.y + dy;
-
-      // Keep boat within canvas bounds
-      newX = Math.max(BOAT_SIZE, Math.min(canvas.width - BOAT_SIZE, newX));
-      newY = Math.max(BOAT_SIZE, Math.min(canvas.height - BOAT_SIZE, newY));
-
-      // Check water collision for new position
-      const isInWater = checkWaterCollision(newX, newY);
-
-      // Only update position if in water
-      if (!isInWater) {
-        // Bounce back
-        newX = gameState.x - dx * 0.5;
-        newY = gameState.y - dy * 0.5;
-        dx = 0;
-        dy = 0;
-      }
-
-      // Clear canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw map
-      ctx.drawImage(MAP_IMAGE, 0, 0, canvas.width, canvas.height);
-
-      // Draw boat (simple triangle)
-      ctx.save();
-      ctx.translate(newX, newY);
-      ctx.rotate(Math.atan2(dy, dx));
-      ctx.beginPath();
-      ctx.moveTo(BOAT_SIZE, 0);
-      ctx.lineTo(-BOAT_SIZE, BOAT_SIZE/2);
-      ctx.lineTo(-BOAT_SIZE, -BOAT_SIZE/2);
-      ctx.closePath();
-      ctx.fillStyle = isInWater ? 'white' : 'red';
-      ctx.fill();
-      ctx.restore();
-
-      // Update game state
-      setGameState(prev => ({
-        ...prev,
-        x: newX,
-        y: newY,
-        dx,
-        dy,
-        isInWater,
-        score: isInWater ? prev.score + 1 : prev.score
-      }));
-
-      // Continue game loop
-      animationId = requestAnimationFrame(gameLoop);
-    };
-
-    // Wait for image to load before starting game
-    if (!MAP_IMAGE.complete) {
-      MAP_IMAGE.onload = () => {
-        initCollisionCanvas();
-        gameLoop();
-      };
-    } else {
-      initCollisionCanvas();
-      gameLoop();
-    }
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-      cancelAnimationFrame(animationId);
-    };
-  }, []);
+  const targetIcon = new Icon({
+    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
 
   return (
     <div className="min-h-screen p-8 pt-20 bg-gradient-to-br from-blue-400 to-blue-600">
@@ -176,24 +138,147 @@ export default function Game() {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-7xl mx-auto"
       >
-        <h1 className="text-4xl font-bold text-white mb-8">SJTU Cruiser 🚢</h1>
-        <div className="flex flex-col items-center">
-          <canvas
-            ref={canvasRef}
-            className="bg-blue-300 rounded-lg shadow-xl"
-          />
-          <canvas
-            ref={collisionCanvasRef}
-            className="hidden"  // Hidden collision detection canvas
-          />
-          <div className="text-white text-xl mt-4">
-            <p>Score: {gameState.score}</p>
-            <p className="text-sm mt-2">
-              {gameState.isInWater ? "Sailing smoothly! ⛵" : "Watch out for land! 🚫"}
-            </p>
+        <div className="text-white mb-8">
+          <h1 className="text-4xl font-bold mb-4">SJTU Campus Explorer 🎯</h1>
+          <p className="text-lg mb-2">Find 拖鞋门 (Slipper Gate) on the map!</p>
+          <p className="text-sm opacity-80">Click anywhere on the map to make your guess. How close can you get?</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Attempts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{gameState.attempts}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Current Distance</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">
+                {gameState.distance ? `${gameState.distance.toFixed(2)} km` : "-"}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Best Distance</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">
+                {gameState.bestDistance !== Infinity ? `${gameState.bestDistance.toFixed(2)} km` : "-"}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xl font-semibold">
+                {gameState.isGameOver ? "Make another attempt!" : "Place your guess"}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="md:col-span-3">
+            <Card>
+              <CardContent className="p-0">
+                <div className="h-[600px] rounded-lg overflow-hidden">
+                  <MapContainer
+                    center={[31.024389, 121.433250]}
+                    zoom={16}
+                    style={{ height: "100%", width: "100%" }}
+                    maxBounds={[[30.7, 121.0], [31.5, 122.0]]}
+                    minZoom={12}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    <MapEvents onMapClick={handleMapClick} />
+                    
+                    {gameState.guessPosition && (
+                      <Marker 
+                        position={[gameState.guessPosition.lat, gameState.guessPosition.lng]}
+                        icon={guessIcon}
+                      >
+                        <Popup>Your guess</Popup>
+                      </Marker>
+                    )}
+
+                    {gameState.showTarget && (
+                      <Marker 
+                        position={[TARGET_LOCATION.lat, TARGET_LOCATION.lng]}
+                        icon={targetIcon}
+                      >
+                        <Popup>{TARGET_LOCATION.name}</Popup>
+                      </Marker>
+                    )}
+                  </MapContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex gap-4 mt-4">
+              <Button
+                size="lg"
+                onClick={handleSubmitGuess}
+                disabled={!gameState.guessPosition || gameState.isGameOver}
+                className="w-full"
+              >
+                Submit Guess
+              </Button>
+              <Button
+                size="lg"
+                onClick={handleTryAgain}
+                disabled={!gameState.isGameOver}
+                variant="outline"
+                className="w-full"
+              >
+                Try Again
+              </Button>
+            </div>
           </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Leaderboard 🏆</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {leaderboard?.map((score, index) => (
+                  <div key={score.id} className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold">{index + 1}.</span>
+                      <span>{score.distance.toFixed(2)} km</span>
+                    </div>
+                    <span className="text-sm text-gray-500">
+                      {score.attempts} attempts
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function Game() {
+  return (
+    <ErrorBoundary>
+      <GameComponent />
+    </ErrorBoundary>
   );
 }

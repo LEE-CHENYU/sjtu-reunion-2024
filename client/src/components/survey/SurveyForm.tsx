@@ -144,15 +144,21 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
     try {
       setIsSubmitting(true);
       
+      // Format the data before submission
+      const formattedData = {
+        ...data,
+        availability: data.availability.map(slot => ({
+          ...slot,
+          date: new Date(slot.date) // Ensure date is properly converted
+        }))
+      };
+
       const response = await fetch("/api/survey", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          ...data,
-          availability: data.availability // Keep as array
-        })
+        body: JSON.stringify(formattedData)
       });
 
       if (!response.ok) {

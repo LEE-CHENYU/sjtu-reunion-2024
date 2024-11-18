@@ -84,7 +84,7 @@ const alcoholPreferencesEnum = [
 
 // Define the time slot schema for both client and server
 const timeSlotSchema = z.object({
-  date: z.date(),
+  date: z.coerce.date(), // Use coerce to handle date string conversion
   times: z.array(z.string())
 });
 

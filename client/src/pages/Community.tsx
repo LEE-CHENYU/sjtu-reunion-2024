@@ -40,10 +40,10 @@ export default function Community() {
       >
         <div className="flex justify-between items-center mb-8">
           <motion.h1 
-            className="text-4xl font-bold text-white"
+            className="text-4xl font-bold text-black"
             style={parallaxEffect(scrollProgress)}
           >
-            Reunion Community Board
+            Reunion Community Board 🎪
           </motion.h1>
           <Link href="/">
             <Button variant="outline" className="text-white border-white hover:bg-white/20">

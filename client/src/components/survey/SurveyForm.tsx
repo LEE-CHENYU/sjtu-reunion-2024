@@ -68,17 +68,6 @@ const ALCOHOL_PREFERENCES = [
   { id: "byob", label: "BYOB" }
 ] as const;
 
-// const TIME_OPTIONS = [
-//   "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
-//   "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM",
-//   "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"
-// ];
-
-// type TimeSlot = {
-//   date: Date;
-//   times: string[];
-// };
-
 interface SurveyFormProps {
   onComplete: () => void;
 }
@@ -87,7 +76,6 @@ type EventType = typeof EVENT_TYPES[number]["id"];
 type VenueType = typeof VENUES[number]["id"];
 
 interface FormValues extends Omit<Survey, 'availability'> {
-  // availability: TimeSlot[];
 }
 
 export function SurveyForm({ onComplete }: SurveyFormProps) {
@@ -105,7 +93,6 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
       eventTypes: ["networking"] as EventType[],
       venue: ["restaurants"] as VenueType[],
       academicStatus: "masters",
-      // availability: [],
       dietaryRestrictions: "",
       alcoholPreferences: "none",
     },
@@ -399,7 +386,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             type="submit"
             className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white"
           >
-            Submit Survey
+            Continue to Time Slots →
           </Button>
         </motion.div>
       </form>

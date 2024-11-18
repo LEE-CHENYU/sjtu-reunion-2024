@@ -191,7 +191,7 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle>Location Distribution</CardTitle>
             </CardHeader>
-            <CardContent className="h-[300px] flex items-center justify-center">
+            <CardContent>
               <Pie
                 data={pieChartData(locationData || [])}
                 options={chartOptions}
@@ -203,7 +203,7 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle>Current Status Distribution</CardTitle>
             </CardHeader>
-            <CardContent className="h-[300px] flex items-center justify-center">
+            <CardContent>
               <Pie
                 data={pieChartData(currentStatusData || [])}
                 options={chartOptions}
@@ -215,7 +215,7 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle>Budget Distribution ($30-$200)</CardTitle>
             </CardHeader>
-            <CardContent className="h-[300px] flex items-center justify-center">
+            <CardContent>
               <Bar
                 data={barChartData(budgetData || [], "range")}
                 options={chartOptions}
@@ -227,7 +227,7 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle>Alcohol Preferences</CardTitle>
             </CardHeader>
-            <CardContent className="h-[300px] flex items-center justify-center">
+            <CardContent>
               <Bar
                 data={barChartData(alcoholData || [], "type")}
                 options={chartOptions}

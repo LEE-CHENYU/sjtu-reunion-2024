@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertSurveySchema, type Survey } from "db/schema";
@@ -36,7 +36,6 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useState } from "react";
 import { z } from "zod";
 
 const EVENT_TYPES = [
@@ -137,9 +136,6 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
     },
   });
 
-  const watchedValues = form.watch();
-  console.log("Current form values:", watchedValues);
-
   const onSubmit = async (data: FormValues) => {
     try {
       setIsSubmitting(true);
@@ -172,7 +168,6 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
 
       onComplete();
     } catch (error) {
-      console.error("Error submitting form:", error);
       toast({
         title: "Error 😕",
         description: "Failed to submit survey. Please try again.",
@@ -182,8 +177,6 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
       setIsSubmitting(false);
     }
   };
-
-  console.log("Form errors:", form.formState.errors);
 
   const isNYCArea = (location: string) => {
     const nycKeywords = ['new york', 'nyc', 'brooklyn', 'queens', 'bronx', 'staten island'];
@@ -198,10 +191,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
   return (
     <Form {...form}>
       <form 
-        onSubmit={(e) => {
-          console.log("Form submit event triggered");
-          form.handleSubmit(onSubmit)(e);
-        }} 
+        onSubmit={form.handleSubmit(onSubmit)} 
         className="space-y-8"
         noValidate
       >
@@ -588,18 +578,11 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
           <Button 
             type="submit" 
             disabled={isSubmitting}
-            onClick={() => console.log("Submit button clicked")}
             className="w-full"
           >
             {isSubmitting ? "Submitting..." : "Submit Survey"}
           </Button>
 
-          <div className="mt-4 p-4 bg-gray-100 rounded-md">
-            <h3 className="font-bold">Debug Info:</h3>
-            <pre className="text-xs mt-2">
-              {JSON.stringify(watchedValues, null, 2)}
-            </pre>
-          </div>
         </motion.div>
       </form>
     </Form>

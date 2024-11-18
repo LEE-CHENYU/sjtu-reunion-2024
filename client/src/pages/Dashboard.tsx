@@ -63,15 +63,19 @@ export default function Dashboard() {
   const { data: locationData, error: locationError } = useSWR<ChartData[]>(
     "/api/analytics/location"
   );
+  const { data: alcoholData, error: alcoholError } = useSWR<ChartData[]>(
+    "/api/analytics/alcohol"
+  );
 
   const isLoading =
     !summaryData && !summaryError ||
     !eventTypeData && !eventTypeError ||
     !currentStatusData && !currentStatusError ||
     !budgetData && !budgetError ||
-    !locationData && !locationError;
+    !locationData && !locationError ||
+    !alcoholData && !alcoholError;
 
-  const hasError = summaryError || eventTypeError || currentStatusError || budgetError || locationError;
+  const hasError = summaryError || eventTypeError || currentStatusError || budgetError || locationError || alcoholError;
 
   if (isLoading) {
     return (
@@ -210,6 +214,18 @@ export default function Dashboard() {
             <CardContent>
               <Bar
                 data={barChartData(budgetData || [], "range")}
+                options={chartOptions}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Alcohol Preferences</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Pie
+                data={pieChartData(alcoholData || [])}
                 options={chartOptions}
               />
             </CardContent>

@@ -63,7 +63,6 @@ export function registerRoutes(app: Express) {
         .groupBy(sql`unnest(${surveys.eventTypes})`)
         .orderBy(desc(sql`count(*)`));
 
-      // Map the event types to their display labels
       const labeledDistribution = distribution.map(item => ({
         type: getEventTypeLabel(item.type),
         count: item.count
@@ -86,7 +85,6 @@ export function registerRoutes(app: Express) {
         .groupBy(surveys.academicStatus)
         .orderBy(desc(sql`count(*)`));
 
-      // Map the status to their display labels
       const labeledDistribution = distribution.map(item => ({
         type: getCurrentStatusLabel(item.status),
         count: item.count
@@ -112,6 +110,28 @@ export function registerRoutes(app: Express) {
       res.json(distribution);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch location analytics" });
+    }
+  });
+
+  app.get("/api/analytics/alcohol", async (req, res) => {
+    try {
+      const distribution = await db
+        .select({
+          type: surveys.alcoholPreferences,
+          count: sql<number>`count(*)`,
+        })
+        .from(surveys)
+        .groupBy(surveys.alcoholPreferences)
+        .orderBy(desc(sql`count(*)`));
+
+      const labeledDistribution = distribution.map(item => ({
+        type: getAlcoholPreferenceLabel(item.type),
+        count: item.count
+      }));
+
+      res.json(labeledDistribution);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch alcohol preferences analytics" });
     }
   });
 
@@ -199,4 +219,14 @@ function getCurrentStatusLabel(status: string): string {
     enjoying: "Enjoying Life"
   };
   return labels[status] || status;
+}
+
+function getAlcoholPreferenceLabel(preference: string): string {
+  const labels: Record<string, string> = {
+    none: "No Alcohol",
+    beer_wine: "Beer & Wine",
+    full_bar: "Full Bar",
+    byob: "BYOB"
+  };
+  return labels[preference] || preference;
 }

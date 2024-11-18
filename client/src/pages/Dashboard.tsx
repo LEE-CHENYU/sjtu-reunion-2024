@@ -144,7 +144,7 @@ export default function Dashboard() {
       >
         <h1 className="text-4xl font-bold text-white mb-8">SJTU Reunion Analytics 📊</h1>
 
-        <motion.div variants={fadeIn} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <motion.div variants={fadeIn} className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card>
             <CardHeader className="flex flex-col justify-between pt-8 pb-2 h-28">
               <CardTitle className="text-lg">Total Responses</CardTitle>
@@ -186,7 +186,7 @@ export default function Dashboard() {
           </Card>
         </motion.div>
 
-        <motion.div variants={fadeIn} className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <motion.div variants={fadeIn} className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <Card>
             <CardHeader>
               <CardTitle>Location Distribution</CardTitle>
@@ -198,6 +198,7 @@ export default function Dashboard() {
               />
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Current Status Distribution</CardTitle>
@@ -209,6 +210,7 @@ export default function Dashboard() {
               />
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Budget Distribution ($30-$200)</CardTitle>
@@ -220,6 +222,7 @@ export default function Dashboard() {
               />
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Alcohol Preferences</CardTitle>

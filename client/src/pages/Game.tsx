@@ -9,6 +9,11 @@ const WATER_COLOR = "#4A90E2";
 const MAP_IMAGE = new Image();
 MAP_IMAGE.src = "/1125e4cf-c2cb-464a-af2d-c58fbb286e4a.jpg";
 
+// Add error handling for image loading
+MAP_IMAGE.onerror = () => {
+  console.error('Failed to load map image');
+};
+
 interface GameState {
   x: number;
   y: number;
@@ -73,11 +78,6 @@ export default function Game() {
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
-
-    // Wait for map image to load
-    MAP_IMAGE.onload = () => {
-      initCollisionCanvas();
-    };
 
     // Game loop
     let animationId: number;
@@ -150,7 +150,16 @@ export default function Game() {
       animationId = requestAnimationFrame(gameLoop);
     };
 
-    gameLoop();
+    // Wait for image to load before starting game
+    if (!MAP_IMAGE.complete) {
+      MAP_IMAGE.onload = () => {
+        initCollisionCanvas();
+        gameLoop();
+      };
+    } else {
+      initCollisionCanvas();
+      gameLoop();
+    }
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);

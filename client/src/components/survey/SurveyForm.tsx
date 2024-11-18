@@ -24,6 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { useLocation } from "wouter";
 
 const EVENT_TYPES = [
   { id: "career", label: "Career" },
@@ -63,6 +64,8 @@ interface SurveyFormProps {
 
 export function SurveyForm({ onComplete }: SurveyFormProps) {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  
   const form = useForm<Survey>({
     resolver: zodResolver(insertSurveySchema),
     defaultValues: {
@@ -94,6 +97,11 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
         description: "Your survey has been submitted.",
       });
       onComplete();
+      
+      // Wait for 2 seconds to show confetti animation before redirecting
+      setTimeout(() => {
+        setLocation('/dashboard');
+      }, 2000);
     } catch (error) {
       toast({
         title: "Error",

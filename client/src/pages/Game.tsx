@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
+import { MapContainer, Marker, Popup, useMapEvents } from "react-leaflet";
 import { Icon, LatLng } from "leaflet";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import useSWR, { mutate } from "swr";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import "leaflet/dist/leaflet.css"; // Add this line to import Leaflet's CSS
 
 // Target location coordinates
 const TARGET_LOCATION = {
@@ -208,7 +209,6 @@ function GameComponent() {
                   >
                     <TileLayer
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      lang="ja"
                       opacity={0.5}
                     />
                     <MapEvents onMapClick={handleMapClick} />

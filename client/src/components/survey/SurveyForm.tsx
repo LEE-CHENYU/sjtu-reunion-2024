@@ -254,16 +254,16 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                           disabled={(date) => {
                             const d = new Date(date);
                             const today = new Date();
-                            // Only allow dates from January 1st to January 31st, 2025
-                            return d < new Date('2025-01-01') || d > new Date('2025-01-31');
+                            // Only allow dates from December 1st, 2024 to January 15th, 2025
+                            return d < new Date('2024-12-01') || d > new Date('2025-01-15');
                           }}
                           className="rounded-md border"
                         />
-                        <div className="p-4 border-t">
-                          <h4 className="mb-2 font-medium">Select Times</h4>
+                        <div className="p-4 border-t max-h-[300px] overflow-y-auto">
+                          <h4 className="mb-2 font-medium sticky top-0 bg-white p-2">Select Times</h4>
                           {field.value?.map((slot, index) => (
                             <div key={format(slot.date, 'yyyy-MM-dd')} className="mb-4">
-                              <h5 className="text-sm font-medium mb-2">
+                              <h5 className="text-sm font-medium mb-2 sticky top-8 bg-white p-2">
                                 {format(slot.date, 'MMMM d, yyyy')}
                               </h5>
                               <ToggleGroup
@@ -277,7 +277,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                                   };
                                   field.onChange(updatedSlots);
                                 }}
-                                className="flex flex-wrap gap-2"
+                                className="flex flex-wrap gap-2 p-2"
                               >
                                 {TIME_OPTIONS.map((time) => (
                                   <ToggleGroupItem
@@ -298,7 +298,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                   </div>
                 </FormControl>
                 <FormDescription>
-                  Select dates between January 1st and January 31st, 2025, then choose available times
+                  Select dates between December 1st, 2024 to January 15th, 2025, then choose available times
                 </FormDescription>
                 <FormMessage />
               </FormItem>

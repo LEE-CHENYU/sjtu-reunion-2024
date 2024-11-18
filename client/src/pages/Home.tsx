@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 to-pink-500">
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 to-blue-600">
       <div className="container mx-auto px-4 py-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -16,7 +16,7 @@ export default function Home() {
           
           <div className="flex gap-6 justify-center">
             <Link href="/survey">
-              <Button size="lg" className="bg-white text-purple-600 hover:bg-purple-100">
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-100">
                 Start Survey 📝
               </Button>
             </Link>

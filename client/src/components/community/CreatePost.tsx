@@ -104,7 +104,7 @@ export function CreatePost({ onPostCreated }: { onPostCreated: () => void }) {
           <motion.div variants={bounceHover} whileHover="hover">
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              className="w-full bg-gradient-to-r from-blue-400 to-blue-600 text-white"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Posting..." : "Post 🚀"}

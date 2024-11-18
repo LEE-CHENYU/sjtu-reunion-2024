@@ -15,7 +15,7 @@ export default function Community() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 to-pink-500 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 to-blue-600 p-8">
       <motion.div
         variants={fadeIn}
         initial="initial"

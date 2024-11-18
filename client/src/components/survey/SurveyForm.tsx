@@ -22,41 +22,48 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 
 const EVENT_TYPES = [
-  { id: "career", label: "Career" },
-  { id: "academic", label: "Academic" },
-  { id: "social", label: "Social" },
-  { id: "dating", label: "Dating" },
-  { id: "entertainment", label: "Entertainment" },
-];
+  { id: "networking", label: "Professional Networking" },
+  { id: "startup", label: "Seeking Startup Partner(s)" },
+  { id: "career", label: "Career Development" },
+  { id: "social", label: "Social Gathering" },
+  { id: "entertainment", label: "Entertainment & Fun" }
+] as const;
 
 const VENUES = [
   { id: "restaurants", label: "Restaurants" },
   { id: "pubs", label: "Pubs" },
   { id: "clubs", label: "Clubs" },
   { id: "event_spaces", label: "Event Spaces" },
-];
+  { id: "airbnb", label: "Airbnb" }
+] as const;
 
 const ACADEMIC_STATUS = [
-  { value: "undergraduate", label: "Undergraduate" },
-  { value: "graduate", label: "Graduate" },
-  { value: "postdoc", label: "Post-doc" },
-  { value: "faculty", label: "Faculty" },
-  { value: "staff", label: "Staff" },
-  { value: "alumni", label: "Alumni" },
-  { value: "other", label: "Other" },
-];
+  { value: "masters", label: "Master's Candidate" },
+  { value: "phd", label: "PhD Candidate" },
+  { value: "working", label: "Working Professional" },
+  { value: "founder", label: "Founding Companies" },
+  { value: "enjoying", label: "Enjoying Life" }
+] as const;
+
+const TIME_SLOTS = [
+  { value: "morning", label: "Morning (9AM - 12PM)" },
+  { value: "afternoon", label: "Afternoon (12PM - 5PM)" },
+  { value: "evening", label: "Evening (5PM - 9PM)" },
+  { value: "night", label: "Night (9PM - 12AM)" }
+] as const;
 
 const ALCOHOL_PREFERENCES = [
   { id: "none", label: "No Alcohol" },
   { id: "beer_wine", label: "Beer & Wine" },
   { id: "full_bar", label: "Full Bar" },
-  { id: "byob", label: "BYOB" },
-];
+  { id: "byob", label: "BYOB" }
+] as const;
 
 interface SurveyFormProps {
   onComplete: () => void;
@@ -70,13 +77,13 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
     resolver: zodResolver(insertSurveySchema),
     defaultValues: {
       email: "",
-      budget: 0,
+      budget: 30,
       location: "",
       transportation: "",
-      eventTypes: [],
-      venue: [],
-      academicStatus: "undergraduate",
-      availability: "",
+      eventTypes: ["social"],
+      venue: ["restaurants"],
+      academicStatus: "masters",
+      availability: "morning",
       dietaryRestrictions: "",
       alcoholPreferences: "none",
     },
@@ -110,6 +117,8 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
     }
   };
 
+  const location = form.watch("location");
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -140,18 +149,17 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             name="budget"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Budget (USD)</FormLabel>
+                <FormLabel>Budget Range ($30-$200)</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="10000"
-                    placeholder="Enter your budget"
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  <Slider
+                    min={30}
+                    max={200}
+                    step={10}
+                    value={[field.value]}
+                    onValueChange={(value) => field.onChange(value[0])}
                   />
                 </FormControl>
-                <FormDescription>Maximum budget for the event</FormDescription>
+                <FormDescription>Selected: ${field.value}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -163,76 +171,72 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             name="location"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Preferred Location</FormLabel>
+                <FormLabel>Where are you coming from?</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter preferred location" {...field} />
+                  <Input placeholder="Enter your location" {...field} />
                 </FormControl>
+                <FormDescription>This helps us plan commute arrangements</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
 
           {/* Transportation Field */}
-          <FormField
-            control={form.control}
-            name="transportation"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Transportation Preference</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select transportation" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="public">Public Transport</SelectItem>
-                    <SelectItem value="private">Private Vehicle</SelectItem>
-                    <SelectItem value="rideshare">Rideshare</SelectItem>
-                    <SelectItem value="walking">Walking</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {location && location !== "New York" && (
+            <FormField
+              control={form.control}
+              name="transportation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Travel Method</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select travel method" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="train">Train</SelectItem>
+                      <SelectItem value="plane">Plane</SelectItem>
+                      <SelectItem value="driving">Driving</SelectItem>
+                      <SelectItem value="rideshare">Ride-share</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           {/* Event Types Field */}
           <FormField
             control={form.control}
             name="eventTypes"
-            render={() => (
+            render={({ field }) => (
               <FormItem>
                 <FormLabel>Event Types</FormLabel>
                 <div className="grid grid-cols-2 gap-4">
                   {EVENT_TYPES.map((type) => (
-                    <FormField
+                    <FormItem
                       key={type.id}
-                      control={form.control}
-                      name="eventTypes"
-                      render={({ field }) => (
-                        <FormItem
-                          key={type.id}
-                          className="flex flex-row items-start space-x-3 space-y-0"
-                        >
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value?.includes(type.id)}
-                              onCheckedChange={(checked) => {
-                                const current = field.value || [];
-                                const updated = checked
-                                  ? [...current, type.id]
-                                  : current.filter((value) => value !== type.id);
-                                field.onChange(updated);
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            {type.label}
-                          </FormLabel>
-                        </FormItem>
-                      )}
-                    />
+                      className="flex flex-row items-start space-x-3 space-y-0"
+                    >
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value.includes(type.id)}
+                          onCheckedChange={(checked) => {
+                            const current = field.value;
+                            const updated = checked
+                              ? [...current, type.id]
+                              : current.filter((value) => value !== type.id);
+                            field.onChange(updated);
+                          }}
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">
+                        {type.label}
+                      </FormLabel>
+                    </FormItem>
                   ))}
                 </div>
                 <FormMessage />
@@ -244,38 +248,31 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
           <FormField
             control={form.control}
             name="venue"
-            render={() => (
+            render={({ field }) => (
               <FormItem>
                 <FormLabel>Venue Preferences</FormLabel>
                 <div className="grid grid-cols-2 gap-4">
                   {VENUES.map((venue) => (
-                    <FormField
+                    <FormItem
                       key={venue.id}
-                      control={form.control}
-                      name="venue"
-                      render={({ field }) => (
-                        <FormItem
-                          key={venue.id}
-                          className="flex flex-row items-start space-x-3 space-y-0"
-                        >
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value?.includes(venue.id)}
-                              onCheckedChange={(checked) => {
-                                const current = field.value || [];
-                                const updated = checked
-                                  ? [...current, venue.id]
-                                  : current.filter((value) => value !== venue.id);
-                                field.onChange(updated);
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            {venue.label}
-                          </FormLabel>
-                        </FormItem>
-                      )}
-                    />
+                      className="flex flex-row items-start space-x-3 space-y-0"
+                    >
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value.includes(venue.id)}
+                          onCheckedChange={(checked) => {
+                            const current = field.value;
+                            const updated = checked
+                              ? [...current, venue.id]
+                              : current.filter((value) => value !== venue.id);
+                            field.onChange(updated);
+                          }}
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">
+                        {venue.label}
+                      </FormLabel>
+                    </FormItem>
                   ))}
                 </div>
                 <FormMessage />
@@ -315,13 +312,21 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             name="availability"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Schedule Availability</FormLabel>
-                <FormControl>
-                  <Input
-                    type="datetime-local"
-                    {...field}
-                  />
-                </FormControl>
+                <FormLabel>Time Slot Preferences</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select preferred time" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {TIME_SLOTS.map((slot) => (
+                      <SelectItem key={slot.value} value={slot.value}>
+                        {slot.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}

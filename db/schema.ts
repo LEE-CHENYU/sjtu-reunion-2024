@@ -11,7 +11,7 @@ export const surveys = pgTable("surveys", {
   eventTypes: text("event_types").array().notNull(),
   venue: text("venue").array().notNull(),
   academicStatus: text("academic_status").notNull(),
-  availability: text("availability").notNull(),
+  availability: text("availability").array().notNull(),
   dietaryRestrictions: text("dietary_restrictions"),
   alcoholPreferences: text("alcohol_preferences").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -43,10 +43,11 @@ export const reactions = pgTable("reactions", {
 });
 
 const eventTypeEnum = [
-  "career",
-  "academic",
-  "social",
+  "networking",
+  "startup",
   "dating",
+  "career",
+  "social",
   "entertainment",
 ] as const;
 
@@ -55,16 +56,15 @@ const venueEnum = [
   "pubs",
   "clubs",
   "event_spaces",
+  "airbnb",
 ] as const;
 
-const academicStatusEnum = [
-  "undergraduate",
-  "graduate",
-  "postdoc",
-  "faculty",
-  "staff",
-  "alumni",
-  "other",
+const currentStatusEnum = [
+  "masters",
+  "phd",
+  "working",
+  "startup",
+  "enjoying",
 ] as const;
 
 const alcoholPreferencesEnum = [
@@ -75,13 +75,13 @@ const alcoholPreferencesEnum = [
 ] as const;
 
 export const insertSurveySchema = createInsertSchema(surveys, {
-  budget: z.number().min(0).max(10000),
+  budget: z.number().min(30).max(200),
   location: z.string().min(1).max(100),
   transportation: z.string().min(1),
   eventTypes: z.array(z.enum(eventTypeEnum)).min(1),
   venue: z.array(z.enum(venueEnum)).min(1),
-  academicStatus: z.enum(academicStatusEnum),
-  availability: z.string().min(1),
+  academicStatus: z.enum(currentStatusEnum),
+  availability: z.array(z.string()).min(1),
   dietaryRestrictions: z.string().optional(),
   alcoholPreferences: z.enum(alcoholPreferencesEnum),
 });

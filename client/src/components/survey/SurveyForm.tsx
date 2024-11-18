@@ -1,3 +1,4 @@
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertSurveySchema, type Survey } from "db/schema";
@@ -30,6 +31,7 @@ import { useLocation } from "wouter";
 const EVENT_TYPES = [
   { id: "networking", label: "Professional Networking" },
   { id: "startup", label: "Seeking Startup Partner(s)" },
+  { id: "dating", label: "Seeking the Other Half" },
   { id: "career", label: "Career Development" },
   { id: "social", label: "Social Gathering" },
   { id: "entertainment", label: "Entertainment & Fun" }
@@ -43,19 +45,12 @@ const VENUES = [
   { id: "airbnb", label: "Airbnb" }
 ] as const;
 
-const ACADEMIC_STATUS = [
+const CURRENT_STATUS = [
   { value: "masters", label: "Master's Candidate" },
   { value: "phd", label: "PhD Candidate" },
   { value: "working", label: "Working Professional" },
-  { value: "founder", label: "Founding Companies" },
+  { value: "startup", label: "Founding a Start Up" },
   { value: "enjoying", label: "Enjoying Life" }
-] as const;
-
-const TIME_SLOTS = [
-  { value: "morning", label: "Morning (9AM - 12PM)" },
-  { value: "afternoon", label: "Afternoon (12PM - 5PM)" },
-  { value: "evening", label: "Evening (5PM - 9PM)" },
-  { value: "night", label: "Night (9PM - 12AM)" }
 ] as const;
 
 const ALCOHOL_PREFERENCES = [
@@ -65,9 +60,21 @@ const ALCOHOL_PREFERENCES = [
   { id: "byob", label: "BYOB" }
 ] as const;
 
+const TIME_SLOTS = {
+  days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+  times: [
+    "9AM-11AM", "11AM-1PM", "1PM-3PM", "3PM-5PM",
+    "5PM-7PM", "7PM-9PM", "9PM-11PM"
+  ]
+};
+
 interface SurveyFormProps {
   onComplete: () => void;
 }
+
+type EventType = typeof EVENT_TYPES[number]["id"];
+type VenueType = typeof VENUES[number]["id"];
+type TimeSlot = `${typeof TIME_SLOTS.days[number]}-${typeof TIME_SLOTS.times[number]}`;
 
 export function SurveyForm({ onComplete }: SurveyFormProps) {
   const { toast } = useToast();
@@ -80,10 +87,10 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
       budget: 30,
       location: "",
       transportation: "",
-      eventTypes: ["social"],
-      venue: ["restaurants"],
+      eventTypes: ["networking"] as EventType[],
+      venue: ["restaurants"] as VenueType[],
       academicStatus: "masters",
-      availability: "morning",
+      availability: [] as TimeSlot[],
       dietaryRestrictions: "",
       alcoholPreferences: "none",
     },
@@ -182,7 +189,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
           />
 
           {/* Transportation Field */}
-          {location && location !== "New York" && (
+          {location && location.toLowerCase() !== "new york" && (
             <FormField
               control={form.control}
               name="transportation"
@@ -214,7 +221,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             name="eventTypes"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Event Types</FormLabel>
+                <FormLabel>Event Interests</FormLabel>
                 <div className="grid grid-cols-2 gap-4">
                   {EVENT_TYPES.map((type) => (
                     <FormItem
@@ -225,7 +232,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                         <Checkbox
                           checked={field.value.includes(type.id)}
                           onCheckedChange={(checked) => {
-                            const current = field.value;
+                            const current = field.value as EventType[];
                             const updated = checked
                               ? [...current, type.id]
                               : current.filter((value) => value !== type.id);
@@ -261,7 +268,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                         <Checkbox
                           checked={field.value.includes(venue.id)}
                           onCheckedChange={(checked) => {
-                            const current = field.value;
+                            const current = field.value as VenueType[];
                             const updated = checked
                               ? [...current, venue.id]
                               : current.filter((value) => value !== venue.id);
@@ -280,13 +287,13 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             )}
           />
 
-          {/* Academic Status Field */}
+          {/* Current Status Field */}
           <FormField
             control={form.control}
             name="academicStatus"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Academic Status</FormLabel>
+                <FormLabel>Current Status</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -294,7 +301,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {ACADEMIC_STATUS.map((status) => (
+                    {CURRENT_STATUS.map((status) => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}
                       </SelectItem>
@@ -306,27 +313,46 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             )}
           />
 
-          {/* Availability Field */}
+          {/* Time Slot Grid */}
           <FormField
             control={form.control}
             name="availability"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Time Slot Preferences</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select preferred time" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {TIME_SLOTS.map((slot) => (
-                      <SelectItem key={slot.value} value={slot.value}>
-                        {slot.label}
-                      </SelectItem>
+                <div className="overflow-x-auto">
+                  <div className="grid grid-cols-8 gap-1 mt-2 min-w-[800px]">
+                    <div className="col-span-1"></div>
+                    {TIME_SLOTS.times.map((time) => (
+                      <div key={time} className="text-xs text-center font-medium">
+                        {time}
+                      </div>
                     ))}
-                  </SelectContent>
-                </Select>
+                    {TIME_SLOTS.days.map((day) => (
+                      <React.Fragment key={day}>
+                        <div className="text-sm font-medium">{day}</div>
+                        {TIME_SLOTS.times.map((time) => (
+                          <div key={`${day}-${time}`} className="p-1">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value.includes(`${day}-${time}` as TimeSlot)}
+                                onCheckedChange={(checked) => {
+                                  const timeSlot = `${day}-${time}` as TimeSlot;
+                                  const current = field.value as TimeSlot[];
+                                  const newValue = checked
+                                    ? [...current, timeSlot]
+                                    : current.filter(slot => slot !== timeSlot);
+                                  field.onChange(newValue);
+                                }}
+                              />
+                            </FormControl>
+                          </div>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+                <FormDescription>Select all time slots that work for you</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -343,6 +369,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                   <Textarea
                     placeholder="Enter any dietary restrictions..."
                     {...field}
+                    value={field.value || ""}
                   />
                 </FormControl>
                 <FormMessage />

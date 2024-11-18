@@ -37,12 +37,12 @@ const chartOptions = {
 interface SummaryData {
   totalResponses: number;
   averageBudget: number;
+  couchSurfingRequests: number;
   popularEventTypes: { type: string; count: number }[];
 }
 
 interface ChartData {
   type?: string;
-  venue?: string;
   range?: string;
   count: number;
 }
@@ -54,8 +54,8 @@ export default function Dashboard() {
   const { data: eventTypeData, error: eventTypeError } = useSWR<ChartData[]>(
     "/api/analytics/event-types"
   );
-  const { data: venueData, error: venueError } = useSWR<ChartData[]>(
-    "/api/analytics/venues"
+  const { data: currentStatusData, error: currentStatusError } = useSWR<ChartData[]>(
+    "/api/analytics/current-status"
   );
   const { data: budgetData, error: budgetError } = useSWR<ChartData[]>(
     "/api/analytics/budget"
@@ -64,10 +64,10 @@ export default function Dashboard() {
   const isLoading =
     !summaryData && !summaryError ||
     !eventTypeData && !eventTypeError ||
-    !venueData && !venueError ||
+    !currentStatusData && !currentStatusError ||
     !budgetData && !budgetError;
 
-  const hasError = summaryError || eventTypeError || venueError || budgetError;
+  const hasError = summaryError || eventTypeError || currentStatusError || budgetError;
 
   if (isLoading) {
     return (
@@ -90,8 +90,8 @@ export default function Dashboard() {
     );
   }
 
-  const pieChartData = (data: ChartData[], labelKey: "type" | "venue") => ({
-    labels: data.map((item) => item[labelKey]),
+  const pieChartData = (data: ChartData[]) => ({
+    labels: data.map((item) => item.type),
     datasets: [
       {
         data: data.map((item) => item.count),
@@ -101,6 +101,7 @@ export default function Dashboard() {
           "rgba(139, 92, 246, 0.8)",
           "rgba(168, 85, 247, 0.8)",
           "rgba(217, 70, 239, 0.8)",
+          "rgba(236, 72, 153, 0.8)",
         ],
         borderColor: "rgba(255, 255, 255, 0.8)",
         borderWidth: 1,
@@ -108,7 +109,7 @@ export default function Dashboard() {
     ],
   });
 
-  const barChartData = (data: ChartData[], labelKey: "range" | "venue") => ({
+  const barChartData = (data: ChartData[], labelKey: "range") => ({
     labels: data.map((item) => item[labelKey]),
     datasets: [
       {
@@ -131,7 +132,7 @@ export default function Dashboard() {
       >
         <h1 className="text-4xl font-bold text-white mb-8">SJTU Reunion Analytics 📊</h1>
 
-        <motion.div variants={fadeIn} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <motion.div variants={fadeIn} className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card>
             <CardHeader>
               <CardTitle>Total Responses</CardTitle>
@@ -146,6 +147,14 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <p className="text-4xl font-bold">${summaryData.averageBudget}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Couch Surfing Requests</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-4xl font-bold">{summaryData.couchSurfingRequests}</p>
             </CardContent>
           </Card>
           <Card>
@@ -168,11 +177,11 @@ export default function Dashboard() {
         <motion.div variants={fadeIn} className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <Card>
             <CardHeader>
-              <CardTitle>Event Type Distribution</CardTitle>
+              <CardTitle>Event Interests Distribution</CardTitle>
             </CardHeader>
             <CardContent>
               <Pie
-                data={pieChartData(eventTypeData, "type")}
+                data={pieChartData(eventTypeData)}
                 options={chartOptions}
               />
             </CardContent>
@@ -180,11 +189,11 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Academic Status Distribution</CardTitle>
+              <CardTitle>Current Status Distribution</CardTitle>
             </CardHeader>
             <CardContent>
               <Pie
-                data={pieChartData(eventTypeData, "type")}
+                data={pieChartData(currentStatusData)}
                 options={chartOptions}
               />
             </CardContent>
@@ -192,7 +201,7 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Budget Distribution</CardTitle>
+              <CardTitle>Budget Distribution ($30-$200)</CardTitle>
             </CardHeader>
             <CardContent>
               <Bar
@@ -204,11 +213,11 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Venue Preferences</CardTitle>
+              <CardTitle>Event Type Preferences</CardTitle>
             </CardHeader>
             <CardContent>
               <Bar
-                data={barChartData(venueData, "venue")}
+                data={pieChartData(eventTypeData)}
                 options={chartOptions}
               />
             </CardContent>

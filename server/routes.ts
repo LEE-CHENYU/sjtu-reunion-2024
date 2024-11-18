@@ -26,6 +26,11 @@ export function registerRoutes(app: Express) {
         .select({ average: sql<number>`avg(${surveys.budget})` })
         .from(surveys);
 
+      const [couchSurfingCount] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(surveys)
+        .where(sql`${surveys.needsCouchSurfing} = true`);
+
       const popularEventTypes = await db
         .select({
           type: sql<string>`unnest(${surveys.eventTypes})`,
@@ -39,6 +44,7 @@ export function registerRoutes(app: Express) {
       res.json({
         totalResponses: totalResponses.count,
         averageBudget: Math.round(avgBudget.average || 0),
+        couchSurfingRequests: couchSurfingCount.count,
         popularEventTypes,
       });
     } catch (error) {
@@ -57,32 +63,44 @@ export function registerRoutes(app: Express) {
         .groupBy(sql`unnest(${surveys.eventTypes})`)
         .orderBy(desc(sql`count(*)`));
 
-      res.json(distribution);
+      // Map the event types to their display labels
+      const labeledDistribution = distribution.map(item => ({
+        type: getEventTypeLabel(item.type),
+        count: item.count
+      }));
+
+      res.json(labeledDistribution);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch event type analytics" });
     }
   });
 
-  app.get("/api/analytics/venues", async (req, res) => {
+  app.get("/api/analytics/current-status", async (req, res) => {
     try {
       const distribution = await db
         .select({
-          venue: sql<string>`unnest(${surveys.venue})`,
+          status: surveys.academicStatus,
           count: sql<number>`count(*)`,
         })
         .from(surveys)
-        .groupBy(sql`unnest(${surveys.venue})`)
+        .groupBy(surveys.academicStatus)
         .orderBy(desc(sql`count(*)`));
 
-      res.json(distribution);
+      // Map the status to their display labels
+      const labeledDistribution = distribution.map(item => ({
+        type: getCurrentStatusLabel(item.status),
+        count: item.count
+      }));
+
+      res.json(labeledDistribution);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch venue analytics" });
+      res.status(500).json({ error: "Failed to fetch academic status analytics" });
     }
   });
 
   app.get("/api/analytics/budget", async (req, res) => {
     try {
-      const ranges = [0, 100, 500, 1000, 5000, 10000];
+      const ranges = [30, 50, 75, 100, 150, 200];
       const distribution = await Promise.all(
         ranges.slice(0, -1).map(async (min, index) => {
           const max = ranges[index + 1];
@@ -140,4 +158,28 @@ export function registerRoutes(app: Express) {
       res.status(500).json({ error: "Failed to add reaction" });
     }
   });
+}
+
+// Helper functions to map values to display labels
+function getEventTypeLabel(type: string): string {
+  const labels: Record<string, string> = {
+    networking: "Professional Networking",
+    startup: "Seeking Startup Partner(s)",
+    dating: "Seeking the Other Half",
+    career: "Career Development",
+    social: "Social Gathering",
+    entertainment: "Entertainment & Fun"
+  };
+  return labels[type] || type;
+}
+
+function getCurrentStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    masters: "Master's Candidate",
+    phd: "PhD Candidate",
+    working: "Working Professional",
+    startup: "Founding a Start Up",
+    enjoying: "Enjoying Life"
+  };
+  return labels[status] || status;
 }

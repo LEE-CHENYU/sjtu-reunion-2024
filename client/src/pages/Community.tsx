@@ -43,7 +43,7 @@ export default function Community() {
             className="text-4xl font-bold text-white"
             style={parallaxEffect(scrollProgress)}
           >
-            SJTU Alumni Community 🎪
+            Reunion Community Board
           </motion.h1>
           <Link href="/">
             <Button variant="outline" className="text-white border-white hover:bg-white/20">

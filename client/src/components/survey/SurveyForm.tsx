@@ -76,6 +76,8 @@ type EventType = typeof EVENT_TYPES[number]["id"];
 type VenueType = typeof VENUES[number]["id"];
 
 interface FormValues extends Omit<Survey, 'availability'> {
+  eventTypes: EventType[];
+  venue: VenueType[];
 }
 
 export function SurveyForm({ onComplete }: SurveyFormProps) {

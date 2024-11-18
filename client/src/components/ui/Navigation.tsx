@@ -38,6 +38,14 @@ export function Navigation() {
                 Dashboard 📊
               </Button>
             </Link>
+            <Link href="/game">
+              <Button
+                variant={location === "/game" ? "default" : "ghost"}
+                className="text-white hover:bg-blue-800/30"
+              >
+                Game 🚢
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

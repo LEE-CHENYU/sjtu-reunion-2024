@@ -10,6 +10,7 @@ import Home from "./pages/Home";
 import Survey from "./pages/Survey";
 import Community from "./pages/Community";
 import Dashboard from "./pages/Dashboard";
+import Game from "./pages/Game";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -20,6 +21,7 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/survey" component={Survey} />
         <Route path="/community" component={Community} />
         <Route path="/dashboard" component={Dashboard} />
+        <Route path="/game" component={Game} />
         <Route>404 Page Not Found</Route>
       </Switch>
       <Toaster />

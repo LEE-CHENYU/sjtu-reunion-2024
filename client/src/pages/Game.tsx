@@ -203,8 +203,8 @@ function GameComponent() {
                   >
                     <TileLayer
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      opacity={0.6}
+                      lang="ja"
+                      opacity={0.5}
                     />
                     <MapEvents onMapClick={handleMapClick} />
 

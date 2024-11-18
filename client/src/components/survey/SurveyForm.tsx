@@ -98,7 +98,6 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
       });
       onComplete();
       
-      // Wait for 2 seconds to show confetti animation before redirecting
       setTimeout(() => {
         setLocation('/dashboard');
       }, 2000);
@@ -118,7 +117,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="space-y-6"
+          className="space-y-6 bg-blue-50 p-6 rounded-lg shadow-lg"
         >
           {/* Email Field */}
           <FormField
@@ -381,7 +380,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
 
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-400 to-blue-600 text-white"
+            className="w-full bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-md hover:shadow-lg transition-all duration-200"
           >
             Submit Survey 🎈
           </Button>

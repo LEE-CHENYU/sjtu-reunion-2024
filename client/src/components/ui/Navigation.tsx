@@ -5,11 +5,11 @@ export function Navigation() {
   const [location] = useLocation();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white/10 backdrop-blur-sm z-50">
+    <nav className="fixed top-0 left-0 right-0 bg-blue-900/20 backdrop-blur-sm z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link href="/">
-            <Button variant="ghost" className="text-white hover:bg-white/20">
+            <Button variant="ghost" className="text-white hover:bg-blue-800/30">
               🎈 SJTU Reunion
             </Button>
           </Link>
@@ -17,7 +17,7 @@ export function Navigation() {
             <Link href="/survey">
               <Button
                 variant={location === "/survey" ? "default" : "ghost"}
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-blue-800/30"
               >
                 Survey 📝
               </Button>
@@ -25,7 +25,7 @@ export function Navigation() {
             <Link href="/community">
               <Button
                 variant={location === "/community" ? "default" : "ghost"}
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-blue-800/30"
               >
                 Community 💬
               </Button>
@@ -33,7 +33,7 @@ export function Navigation() {
             <Link href="/dashboard">
               <Button
                 variant={location === "/dashboard" ? "default" : "ghost"}
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-blue-800/30"
               >
                 Dashboard 📊
               </Button>

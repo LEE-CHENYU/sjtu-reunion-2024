@@ -48,7 +48,7 @@ export function CreatePost({ onPostCreated }: { onPostCreated: () => void }) {
         description: "Your post has been published.",
       });
       form.reset();
-      mutate("/api/posts"); // Add mutate call to refresh posts
+      mutate("/api/posts");
       onPostCreated();
     } catch (error) {
       toast({
@@ -66,9 +66,9 @@ export function CreatePost({ onPostCreated }: { onPostCreated: () => void }) {
       variants={fadeIn}
       initial="initial"
       animate="animate"
-      className="bg-white rounded-xl shadow-lg p-6 mb-8"
+      className="bg-blue-50 rounded-xl shadow-lg p-6 mb-8"
     >
-      <h2 className="text-2xl font-bold mb-4">Create a Post ✨</h2>
+      <h2 className="text-2xl font-bold mb-4 text-gray-800">Create a Post ✨</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -78,7 +78,7 @@ export function CreatePost({ onPostCreated }: { onPostCreated: () => void }) {
               <FormItem>
                 <FormLabel>Title</FormLabel>
                 <FormControl>
-                  <Input placeholder="What's on your mind?" {...field} />
+                  <Input placeholder="What's on your mind?" {...field} className="bg-white/50" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -94,7 +94,7 @@ export function CreatePost({ onPostCreated }: { onPostCreated: () => void }) {
                 <FormControl>
                   <Textarea 
                     placeholder="Share your thoughts..."
-                    className="min-h-[100px]"
+                    className="min-h-[100px] bg-white/50"
                     {...field}
                   />
                 </FormControl>
@@ -106,7 +106,7 @@ export function CreatePost({ onPostCreated }: { onPostCreated: () => void }) {
           <motion.div variants={bounceHover} whileHover="hover">
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-blue-400 to-blue-600 text-white"
+              className="w-full bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-md hover:shadow-lg transition-all duration-200"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Posting..." : "Post 🚀"}

@@ -9,6 +9,12 @@
   font-size: 0;
 }
 
+@media (max-width: 640px) {
+  .leaflet-container {
+    height: 400px !important;
+  }
+}
+
 .leaflet-container .leaflet-tile-pane {
   filter: grayscale(100%) brightness(90%) contrast(85%);
 }

@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertSurveySchema, type Survey } from "db/schema";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
+import { useLocation } from "wouter";
 import {
   Popover,
   PopoverTrigger,
@@ -79,6 +80,7 @@ interface FormValues extends Omit<Survey, 'availability'> {
 
 export function SurveyForm({ onComplete }: SurveyFormProps) {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(insertSurveySchema),
@@ -98,15 +100,11 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
 
   const onSubmit = async (data: FormValues) => {
     try {
-      // Store form data in localStorage with proper error handling
       if (!data) {
         throw new Error("Form data is empty");
       }
-      
       localStorage.setItem("surveyFormData", JSON.stringify(data));
-      
-      // Force navigation to time slots page
-      window.location.href = '/survey/time-slots';
+      setLocation('/survey/time-slots');
     } catch (error) {
       toast({
         title: "Error",

@@ -143,7 +143,7 @@ function GameComponent() {
           <p className="text-sm opacity-80">Click anywhere on the map to make your guess. How close can you get?</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           <Card>
             <CardHeader>
               <CardTitle>Attempts</CardTitle>
@@ -187,8 +187,8 @@ function GameComponent() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="md:col-span-3">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <div className="lg:col-span-3">
             <Card>
               <CardContent className="p-0">
                 <div className="h-[600px] rounded-lg overflow-hidden">
@@ -256,26 +256,28 @@ function GameComponent() {
             </div>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Leaderboard 🏆</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {leaderboard?.map((score, index) => (
-                  <div key={score.id} className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold">{index + 1}.</span>
-                      <span>{score.distance.toFixed(2)} km</span>
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Leaderboard 🏆</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {leaderboard?.map((score, index) => (
+                    <div key={score.id} className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold">{index + 1}.</span>
+                        <span>{score.distance.toFixed(2)} km</span>
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        {score.attempts} attempts
+                      </span>
                     </div>
-                    <span className="text-sm text-gray-500">
-                      {score.attempts} attempts
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </motion.div>
     </div>

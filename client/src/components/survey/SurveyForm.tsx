@@ -35,6 +35,9 @@ import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useState } from "react";
+import { z } from "zod";
 
 const EVENT_TYPES = [
   { id: "networking", label: "Professional Networking" },
@@ -83,69 +86,119 @@ interface SurveyFormProps {
   onComplete: () => void;
 }
 
-type FormValues = Omit<Survey, 'availability'> & {
+type EventType = typeof EVENT_TYPES[number]["id"];
+type VenueType = typeof VENUES[number]["id"];
+
+interface FormValues extends Omit<Survey, 'availability'> {
   availability: TimeSlot[];
-};
+}
+
+// Define the time slot type
+const timeSlotSchema = z.object({
+  date: z.date(),
+  times: z.array(z.string())
+});
+
+// Client-side schema that accepts array for availability
+const clientSurveySchema = z.object({
+  email: z.string().email("Invalid email address"),
+  budget: z.number().min(30, "Budget must be at least $30").max(200, "Budget cannot exceed $200"),
+  location: z.string().min(1, "Location is required"),
+  transportation: z.string().optional(),
+  needsCouchSurfing: z.boolean(),
+  eventTypes: z.array(z.string()).min(1, "Select at least one event type"),
+  venue: z.array(z.string()).min(1, "Select at least one venue"),
+  academicStatus: z.string().min(1, "Academic status is required"),
+  // Accept array for client-side validation
+  availability: z.array(timeSlotSchema).min(1, "Select at least one time slot"),
+  dietaryRestrictions: z.string().optional(),
+  alcoholPreferences: z.string().min(1, "Alcohol preference is required"),
+});
 
 export function SurveyForm({ onComplete }: SurveyFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
-  
+  const [, navigate] = useLocation();
+
   const form = useForm<FormValues>({
-    resolver: zodResolver(insertSurveySchema),
+    resolver: zodResolver(clientSurveySchema),
     defaultValues: {
       email: "",
-      budget: 30,
+      budget: 50,
       location: "",
       transportation: "",
       needsCouchSurfing: false,
-      eventTypes: ["networking"],
-      venue: ["restaurants"],
-      academicStatus: "masters",
-      availability: [],
+      eventTypes: [],
+      venue: [],
+      academicStatus: "",
+      availability: [], // Initialize as empty array
       dietaryRestrictions: "",
       alcoholPreferences: "none",
     },
   });
 
+  const watchedValues = form.watch();
+  console.log("Current form values:", watchedValues);
+
   const onSubmit = async (data: FormValues) => {
     try {
-      const surveyData: Survey = {
-        ...data,
-        availability: data.availability, // Remove JSON.stringify
-      };
-
+      setIsSubmitting(true);
+      
       const response = await fetch("/api/survey", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(surveyData),
+        headers: { 
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          ...data,
+          availability: data.availability // Keep as array
+        })
       });
 
-      if (!response.ok) throw new Error("Survey submission failed");
+      if (!response.ok) {
+        throw new Error("Survey submission failed");
+      }
 
       toast({
         title: "Success! 🎉",
         description: "Your survey has been submitted.",
       });
+
       onComplete();
-      
-      setTimeout(() => {
-        setLocation('/dashboard');
-      }, 2000);
     } catch (error) {
+      console.error("Error submitting form:", error);
       toast({
-        title: "Error",
+        title: "Error 😕",
         description: "Failed to submit survey. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const location = form.watch("location");
+  console.log("Form errors:", form.formState.errors);
+
+  const isNYCArea = (location: string) => {
+    const nycKeywords = ['new york', 'nyc', 'brooklyn', 'queens', 'bronx', 'staten island'];
+    return nycKeywords.some(keyword => 
+      location.toLowerCase().includes(keyword)
+    );
+  };
+
+  const location = form.watch('location');
+  const requireTransportation = location && !isNYCArea(location);
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form 
+        onSubmit={(e) => {
+          console.log("Form submit event triggered");
+          form.handleSubmit(onSubmit)(e);
+        }} 
+        className="space-y-8"
+        noValidate
+      >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -197,35 +250,43 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
               <FormItem>
                 <FormLabel>Where are you coming from?</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter your location" {...field} />
+                  <Input {...field} />
                 </FormControl>
-                <FormDescription>This helps us plan commute arrangements</FormDescription>
+                <FormDescription>
+                  Enter your current location
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {/* Transportation Field */}
-          {location && location.toLowerCase() !== "new york" && (
+          {/* Transportation field - conditionally rendered */}
+          {requireTransportation && (
             <FormField
               control={form.control}
               name="transportation"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Travel Method</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
+                  <FormLabel>How will you get here?</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select travel method" />
+                        <SelectValue placeholder="Select transportation" />
                       </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="train">Train</SelectItem>
-                      <SelectItem value="plane">Plane</SelectItem>
-                      <SelectItem value="driving">Driving</SelectItem>
-                      <SelectItem value="rideshare">Ride-share</SelectItem>
-                    </SelectContent>
-                  </Select>
+                      <SelectContent>
+                        <SelectItem value="flight">Flight</SelectItem>
+                        <SelectItem value="train">Train</SelectItem>
+                        <SelectItem value="bus">Bus</SelectItem>
+                        <SelectItem value="car">Car</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormDescription>
+                    Select your primary mode of transportation
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -233,7 +294,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
           )}
 
           {/* Couch Surfing Field - Only show if not from New York */}
-          {location && location.toLowerCase() !== "new york" && (
+          {form.watch("location") && form.watch("location").toLowerCase() !== "new york" && (
             <FormField
               control={form.control}
               name="needsCouchSurfing"
@@ -295,6 +356,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             )}
           />
 
+          {/* Rest of the form fields... */}
           {/* Venue Preferences Field */}
           <FormField
             control={form.control}
@@ -362,86 +424,89 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             control={form.control}
             name="availability"
             render={({ field }) => (
-              <FormItem className="flex flex-col">
+              <FormItem className="space-y-4">
                 <FormLabel>Time Slot Preferences</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value?.length > 0 ? (
-                        <span>{field.value.length} time slots selected</span>
-                      ) : (
-                        <span>Select time slots</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent 
-                    className="w-screen h-[80vh] sm:w-auto sm:h-auto p-0" 
-                    align="start"
-                    side="bottom"
-                  >
-                    <Calendar
-                      mode="multiple"
-                      selected={field.value.map(slot => slot.date)}
-                      onSelect={(dates) => {
-                        const existingSlots = field.value.filter(slot =>
-                          dates?.some(d => format(d, 'yyyy-MM-dd') === format(slot.date, 'yyyy-MM-dd'))
-                        );
-                        
-                        const newDates = dates?.filter(date =>
-                          !field.value.some(slot => format(slot.date, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))
-                        ) || [];
-                        
-                        field.onChange([
-                          ...existingSlots,
-                          ...newDates.map(date => ({ date, times: [] }))
-                        ]);
-                      }}
-                      disabled={(date) => {
-                        const d = new Date(date);
-                        return d < new Date('2024-12-01') || d > new Date('2025-01-15');
-                      }}
-                      className="rounded-md border"
-                    />
-                    
-                    <div className="max-h-[300px] overflow-y-auto p-4">
-                      {field.value.map((slot, index) => (
-                        <div key={format(slot.date, 'yyyy-MM-dd')} className="mb-6 last:mb-0">
-                          <h4 className="font-medium mb-3">
-                            {format(slot.date, 'EEEE, MMMM d, yyyy')}
-                          </h4>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            {TIME_OPTIONS.map((time) => (
-                              <label
-                                key={time}
-                                className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded"
-                              >
-                                <Checkbox
-                                  checked={slot.times.includes(time)}
-                                  onCheckedChange={(checked) => {
-                                    const newValue = [...field.value];
-                                    if (checked) {
-                                      newValue[index].times = [...slot.times, time];
-                                    } else {
-                                      newValue[index].times = slot.times.filter(t => t !== time);
-                                    }
-                                    field.onChange(newValue);
-                                  }}
-                                />
-                                <span className="text-sm whitespace-nowrap">{time}</span>
-                              </label>
-                            ))}
-                          </div>
+                <FormControl>
+                  <div className="space-y-4">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value?.length > 0 ? (
+                            <span>{field.value.length} time slots selected</span>
+                          ) : (
+                            <span>Select time slots</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="multiple"
+                          selected={field.value?.map(slot => slot.date) || []}
+                          onSelect={(dates) => {
+                            if (!dates) return;
+                            // Keep existing time selections for dates that are still selected
+                            const existingSlots = field.value?.filter(slot =>
+                              dates.some(d => format(d, 'yyyy-MM-dd') === format(slot.date, 'yyyy-MM-dd'))
+                            ) || [];
+
+                            // Add new dates without time selections
+                            const newDates = dates.filter(date =>
+                              !field.value?.some(slot => format(slot.date, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))
+                            ) || [];
+
+                            field.onChange([
+                              ...existingSlots,
+                              ...newDates.map(date => ({ date, times: [] }))
+                            ]);
+                          }}
+                          disabled={(date) => {
+                            const d = new Date(date);
+                            return d < new Date('2024-12-01') || d > new Date('2025-01-15');
+                          }}
+                          className="rounded-md border"
+                        />
+
+                        <div className="max-h-[300px] overflow-y-auto">
+                          {field.value?.map((slot, index) => (
+                            <div key={format(slot.date, 'yyyy-MM-dd')} className="p-3 border-t">
+                              <h4 className="font-medium mb-2">
+                                {format(slot.date, 'EEEE, MMMM d, yyyy')}
+                              </h4>
+                              <div className="grid grid-cols-4 gap-2">
+                                {TIME_OPTIONS.map((time) => (
+                                  <label
+                                    key={time}
+                                    className="flex items-center space-x-2"
+                                  >
+                                    <Checkbox
+                                      checked={slot.times.includes(time)}
+                                      onCheckedChange={(checked) => {
+                                        const newValue = [...(field.value || [])];
+                                        if (checked) {
+                                          newValue[index].times = [...slot.times, time];
+                                        } else {
+                                          newValue[index].times = slot.times.filter(t => t !== time);
+                                        }
+                                        field.onChange(newValue);
+                                      }}
+                                    />
+                                    <span className="text-sm">{time}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </FormControl>
                 <FormDescription>
                   Select dates between Dec 1, 2024 and Jan 15, 2025, then choose available times
                 </FormDescription>
@@ -502,17 +567,33 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             )}
           />
 
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          {/* Add error display */}
+          {Object.keys(form.formState.errors).length > 0 && (
+            <div className="text-red-500 text-sm p-4 bg-red-50 rounded-md">
+              <p className="font-medium">Please fix the following errors:</p>
+              <ul className="list-disc pl-5 mt-2">
+                {Object.entries(form.formState.errors).map(([key, error]) => (
+                  <li key={key}>{error.message}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <Button 
+            type="submit" 
+            disabled={isSubmitting}
+            onClick={() => console.log("Submit button clicked")}
+            className="w-full"
           >
-            <Button
-              type="submit"
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md hover:shadow-lg transition-all duration-200"
-            >
-              Submit Survey 🎉
-            </Button>
-          </motion.div>
+            {isSubmitting ? "Submitting..." : "Submit Survey"}
+          </Button>
+
+          <div className="mt-4 p-4 bg-gray-100 rounded-md">
+            <h3 className="font-bold">Debug Info:</h3>
+            <pre className="text-xs mt-2">
+              {JSON.stringify(watchedValues, null, 2)}
+            </pre>
+          </div>
         </motion.div>
       </form>
     </Form>

@@ -3,15 +3,29 @@ import { db } from "db";
 import { surveys, posts, comments, reactions, game_scores } from "db/schema";
 import { sql } from "drizzle-orm";
 import { eq, desc } from "drizzle-orm";
+import { insertSurveySchema } from "db/schema";
 
 export function registerRoutes(app: Express) {
   // Survey routes
   app.post("/api/survey", async (req, res) => {
     try {
-      const survey = await db.insert(surveys).values(req.body).returning();
-      res.json(survey[0]);
+      console.log("Received survey data:", req.body);
+
+      const validatedData = insertSurveySchema.parse({
+        ...req.body,
+        availability: req.body.availability // Keep as array
+      });
+
+      const result = await db.insert(surveys).values(validatedData).returning();
+      console.log("Inserted survey:", result);
+
+      res.json(result[0]);
     } catch (error) {
-      res.status(500).json({ error: "Failed to submit survey" });
+      console.error("Survey submission error:", error);
+      res.status(400).json({ 
+        message: error instanceof Error ? error.message : "Failed to submit survey",
+        details: error
+      });
     }
   });
 
@@ -181,7 +195,7 @@ export function registerRoutes(app: Express) {
             .select({ count: sql<number>`count(*)` })
             .from(surveys)
             .where(sql`${surveys.budget} >= ${min} AND ${surveys.budget} < ${max}`);
-          
+
           return {
             range: `$${min}-${max}`,
             count: Number(result.count),

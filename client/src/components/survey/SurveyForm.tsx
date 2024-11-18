@@ -92,13 +92,11 @@ interface FormValues extends Omit<Survey, 'availability'> {
   availability: TimeSlot[];
 }
 
-// Define the time slot type
 const timeSlotSchema = z.object({
   date: z.date(),
   times: z.array(z.string())
 });
 
-// Client-side schema that accepts array for availability
 const clientSurveySchema = z.object({
   email: z.string().email("Invalid email address"),
   budget: z.number().min(30, "Budget must be at least $30").max(200, "Budget cannot exceed $200"),
@@ -108,7 +106,6 @@ const clientSurveySchema = z.object({
   eventTypes: z.array(z.string()).min(1, "Select at least one event type"),
   venue: z.array(z.string()).min(1, "Select at least one venue"),
   academicStatus: z.string().min(1, "Academic status is required"),
-  // Accept array for client-side validation
   availability: z.array(timeSlotSchema).min(1, "Select at least one time slot"),
   dietaryRestrictions: z.string().optional(),
   alcoholPreferences: z.string().min(1, "Alcohol preference is required"),
@@ -130,7 +127,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
       eventTypes: [],
       venue: [],
       academicStatus: "",
-      availability: [], // Initialize as empty array
+      availability: [],
       dietaryRestrictions: "",
       alcoholPreferences: "none",
     },
@@ -140,12 +137,11 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
     try {
       setIsSubmitting(true);
       
-      // Format the data before submission
       const formattedData = {
         ...data,
         availability: data.availability.map(slot => ({
           ...slot,
-          date: new Date(slot.date) // Ensure date is properly converted
+          date: new Date(slot.date)
         }))
       };
 
@@ -201,7 +197,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
           transition={{ duration: 0.5 }}
           className="space-y-6 bg-blue-50 p-6 rounded-lg shadow-lg"
         >
-          {/* Time Slot Calendar - Moved to top */}
+          {/* Time Slot Calendar */}
           <FormField
             control={form.control}
             name="availability"
@@ -227,21 +223,19 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent 
-                        className="w-screen h-[80vh] sm:w-auto sm:h-auto p-0" 
+                        className="w-[95vw] max-w-screen-lg h-[90vh] sm:w-[600px] sm:h-auto p-0 overflow-y-auto" 
                         align="start"
-                        side="top"
+                        side="bottom"
                       >
                         <Calendar
                           mode="multiple"
                           selected={field.value?.map(slot => slot.date) || []}
                           onSelect={(dates) => {
                             if (!dates) return;
-                            // Keep existing time selections for dates that are still selected
                             const existingSlots = field.value?.filter(slot =>
                               dates.some(d => format(d, 'yyyy-MM-dd') === format(slot.date, 'yyyy-MM-dd'))
                             ) || [];
 
-                            // Add new dates without time selections
                             const newDates = dates.filter(date =>
                               !field.value?.some(slot => format(slot.date, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))
                             ) || [];
@@ -253,52 +247,41 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                           }}
                           disabled={(date) => {
                             const d = new Date(date);
-                            const today = new Date();
-                            // Only allow dates from January 1st to January 31st, 2025
-                            return d < new Date('2025-01-01') || d > new Date('2025-01-31');
+                            // Allow dates from December 1st, 2024 to January 15th, 2025
+                            return d < new Date('2024-12-01') || d > new Date('2025-01-15');
                           }}
                           className="rounded-md border"
                         />
-                        <div className="p-4 border-t">
-                          <h4 className="mb-2 font-medium">Select Times</h4>
-                          {field.value?.map((slot, index) => (
-                            <div key={format(slot.date, 'yyyy-MM-dd')} className="mb-4">
-                              <h5 className="text-sm font-medium mb-2">
-                                {format(slot.date, 'MMMM d, yyyy')}
-                              </h5>
-                              <ToggleGroup
-                                type="multiple"
-                                value={slot.times}
-                                onValueChange={(newTimes) => {
-                                  const updatedSlots = [...field.value!];
-                                  updatedSlots[index] = {
-                                    ...slot,
-                                    times: newTimes
-                                  };
-                                  field.onChange(updatedSlots);
-                                }}
-                                className="flex flex-wrap gap-2"
-                              >
-                                {TIME_OPTIONS.map((time) => (
-                                  <ToggleGroupItem
-                                    key={time}
-                                    value={time}
-                                    size="sm"
-                                    className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                                  >
-                                    {time}
-                                  </ToggleGroupItem>
-                                ))}
-                              </ToggleGroup>
-                            </div>
-                          ))}
+                        <div className="p-4 border-t space-y-4 max-h-[50vh] overflow-y-auto">
+                          <h4 className="text-lg font-medium sticky top-0 bg-white py-2">Select Times</h4>
+                          <div className="grid gap-6">
+                            {field.value?.map((slot, index) => (
+                              <div key={format(slot.date, 'yyyy-MM-dd')} className="space-y-3">
+                                <h5 className="text-sm font-medium sticky top-12 bg-white py-1">
+                                  {format(slot.date, 'MMMM d, yyyy')}
+                                </h5>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                  {TIME_OPTIONS.map((time) => (
+                                    <ToggleGroupItem
+                                      key={time}
+                                      value={time}
+                                      size="sm"
+                                      className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                                    >
+                                      {time}
+                                    </ToggleGroupItem>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </PopoverContent>
                     </Popover>
                   </div>
                 </FormControl>
                 <FormDescription>
-                  Select dates between January 1st and January 31st, 2025, then choose available times
+                  Select dates between December 1st, 2024 and January 15th, 2025, then choose available times
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -393,7 +376,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             />
           )}
 
-          {/* Couch Surfing Field - Only show if not from New York */}
+          {/* Couch Surfing Field */}
           {form.watch("location") && form.watch("location").toLowerCase() !== "new york" && (
             <FormField
               control={form.control}
@@ -499,20 +482,27 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Current Status</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    className="grid grid-cols-2 gap-4"
+                  >
                     {CURRENT_STATUS.map((status) => (
-                      <SelectItem key={status.value} value={status.value}>
-                        {status.label}
-                      </SelectItem>
+                      <FormItem
+                        key={status.value}
+                        className="flex items-center space-x-3 space-y-0"
+                      >
+                        <FormControl>
+                          <RadioGroupItem value={status.value} />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          {status.label}
+                        </FormLabel>
+                      </FormItem>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </RadioGroup>
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -527,9 +517,9 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                 <FormLabel>Dietary Restrictions</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Enter any dietary restrictions..."
+                    placeholder="Any food allergies or dietary preferences?"
+                    className="resize-none"
                     {...field}
-                    value={field.value || ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -553,7 +543,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                     {ALCOHOL_PREFERENCES.map((pref) => (
                       <FormItem
                         key={pref.id}
-                        className="flex items-center space-x-2"
+                        className="flex items-center space-x-3 space-y-0"
                       >
                         <FormControl>
                           <RadioGroupItem value={pref.id} />
@@ -570,26 +560,13 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             )}
           />
 
-          {/* Add error display */}
-          {Object.keys(form.formState.errors).length > 0 && (
-            <div className="text-red-500 text-sm p-4 bg-red-50 rounded-md">
-              <p className="font-medium">Please fix the following errors:</p>
-              <ul className="list-disc pl-5 mt-2">
-                {Object.entries(form.formState.errors).map(([key, error]) => (
-                  <li key={key}>{error.message}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <Button 
-            type="submit" 
-            disabled={isSubmitting}
+          <Button
+            type="submit"
             className="w-full"
+            disabled={isSubmitting}
           >
             {isSubmitting ? "Submitting..." : "Submit Survey"}
           </Button>
-
         </motion.div>
       </form>
     </Form>

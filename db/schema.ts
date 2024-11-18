@@ -12,7 +12,7 @@ export const surveys = pgTable("surveys", {
   eventTypes: text("event_types").array().notNull(),
   venue: text("venue").array().notNull(),
   academicStatus: text("academic_status").notNull(),
-  availability: text("availability").array().notNull(),
+  availability: text("availability").notNull(),  // Will store stringified JSON
   dietaryRestrictions: text("dietary_restrictions"),
   alcoholPreferences: text("alcohol_preferences").notNull(),
   createdAt: timestamp("created_at").defaultNow(),

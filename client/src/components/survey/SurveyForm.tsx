@@ -112,7 +112,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
     try {
       const surveyData: Survey = {
         ...data,
-        availability: data.availability, // Remove JSON.stringify
+        availability: JSON.stringify(data.availability),
       };
 
       const response = await fetch("/api/survey", {

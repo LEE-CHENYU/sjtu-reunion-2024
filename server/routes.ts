@@ -8,9 +8,14 @@ export function registerRoutes(app: Express) {
   // Survey routes
   app.post("/api/survey", async (req, res) => {
     try {
-      const survey = await db.insert(surveys).values(req.body).returning();
+      const surveyData = {
+        ...req.body,
+        availability: req.body.availability  // Already stringified from client
+      };
+      const survey = await db.insert(surveys).values(surveyData).returning();
       res.json(survey[0]);
     } catch (error) {
+      console.error('Survey submission error:', error);
       res.status(500).json({ error: "Failed to submit survey" });
     }
   });

@@ -1,6 +1,6 @@
 import { Express } from "express";
 import { db } from "db";
-import { surveys, posts, comments, reactions } from "db/schema";
+import { surveys, posts, comments, reactions, game_scores } from "db/schema";
 import { sql } from "drizzle-orm";
 import { eq, desc } from "drizzle-orm";
 
@@ -19,9 +19,12 @@ export function registerRoutes(app: Express) {
   app.post("/api/game/score", async (req, res) => {
     try {
       const { distance, attempts } = req.body;
-      const [score] = await db.execute(
-        sql`INSERT INTO game_scores (distance, attempts) VALUES (${distance}, ${attempts}) RETURNING *`
-      );
+      const [score] = await db.insert(game_scores)
+        .values({
+          distance,
+          attempts
+        })
+        .returning();
       res.json(score);
     } catch (error) {
       res.status(500).json({ error: "Failed to save game score" });
@@ -30,9 +33,18 @@ export function registerRoutes(app: Express) {
 
   app.get("/api/game/leaderboard", async (req, res) => {
     try {
-      const scores = await db.execute<{ id: number; distance: number; attempts: number; created_at: string }>(
-        sql`SELECT * FROM game_scores ORDER BY distance ASC, attempts ASC LIMIT 10`
-      );
+      const scores = await db
+        .select({
+          id: sql<number>`id`,
+          distance: sql<number>`distance`,
+          attempts: sql<number>`attempts`,
+          created_at: sql<string>`created_at`
+        })
+        .from(sql`game_scores`)
+        .orderBy(sql`distance`, 'asc')
+        .orderBy(sql`attempts`, 'asc')
+        .limit(10);
+
       res.json(scores);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch leaderboard" });

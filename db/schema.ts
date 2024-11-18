@@ -1,4 +1,4 @@
-import { pgTable, text, integer, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, timestamp, boolean, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -41,6 +41,13 @@ export const reactions = pgTable("reactions", {
   postId: integer("post_id").notNull(),
   emoji: text("emoji").notNull(),
   authorId: text("author_id").notNull(),
+});
+
+export const game_scores = pgTable("game_scores", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  distance: numeric("distance").notNull(),
+  attempts: integer("attempts").notNull(),
+  created_at: timestamp("created_at").defaultNow()
 });
 
 const eventTypeEnum = [

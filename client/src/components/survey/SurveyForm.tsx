@@ -201,6 +201,110 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
           transition={{ duration: 0.5 }}
           className="space-y-6 bg-blue-50 p-6 rounded-lg shadow-lg"
         >
+          {/* Time Slot Calendar - Moved to top */}
+          <FormField
+            control={form.control}
+            name="availability"
+            render={({ field }) => (
+              <FormItem className="space-y-4">
+                <FormLabel>Time Slot Preferences</FormLabel>
+                <FormControl>
+                  <div className="space-y-4">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value?.length > 0 ? (
+                            <span>{field.value.length} time slots selected</span>
+                          ) : (
+                            <span>Select time slots</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent 
+                        className="w-screen h-[80vh] sm:w-auto sm:h-auto p-0" 
+                        align="start"
+                        side="top"
+                      >
+                        <Calendar
+                          mode="multiple"
+                          selected={field.value?.map(slot => slot.date) || []}
+                          onSelect={(dates) => {
+                            if (!dates) return;
+                            // Keep existing time selections for dates that are still selected
+                            const existingSlots = field.value?.filter(slot =>
+                              dates.some(d => format(d, 'yyyy-MM-dd') === format(slot.date, 'yyyy-MM-dd'))
+                            ) || [];
+
+                            // Add new dates without time selections
+                            const newDates = dates.filter(date =>
+                              !field.value?.some(slot => format(slot.date, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))
+                            ) || [];
+
+                            field.onChange([
+                              ...existingSlots,
+                              ...newDates.map(date => ({ date, times: [] }))
+                            ]);
+                          }}
+                          disabled={(date) => {
+                            const d = new Date(date);
+                            const today = new Date();
+                            // Only allow dates from January 1st to January 31st, 2025
+                            return d < new Date('2025-01-01') || d > new Date('2025-01-31');
+                          }}
+                          className="rounded-md border"
+                        />
+                        <div className="p-4 border-t">
+                          <h4 className="mb-2 font-medium">Select Times</h4>
+                          {field.value?.map((slot, index) => (
+                            <div key={format(slot.date, 'yyyy-MM-dd')} className="mb-4">
+                              <h5 className="text-sm font-medium mb-2">
+                                {format(slot.date, 'MMMM d, yyyy')}
+                              </h5>
+                              <ToggleGroup
+                                type="multiple"
+                                value={slot.times}
+                                onValueChange={(newTimes) => {
+                                  const updatedSlots = [...field.value!];
+                                  updatedSlots[index] = {
+                                    ...slot,
+                                    times: newTimes
+                                  };
+                                  field.onChange(updatedSlots);
+                                }}
+                                className="flex flex-wrap gap-2"
+                              >
+                                {TIME_OPTIONS.map((time) => (
+                                  <ToggleGroupItem
+                                    key={time}
+                                    value={time}
+                                    size="sm"
+                                    className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                                  >
+                                    {time}
+                                  </ToggleGroupItem>
+                                ))}
+                              </ToggleGroup>
+                            </div>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </FormControl>
+                <FormDescription>
+                  Select dates between January 1st and January 31st, 2025, then choose available times
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           {/* Email Field */}
           <FormField
             control={form.control}
@@ -352,7 +456,6 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             )}
           />
 
-          {/* Rest of the form fields... */}
           {/* Venue Preferences Field */}
           <FormField
             control={form.control}
@@ -410,102 +513,6 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Time Slot Calendar */}
-          <FormField
-            control={form.control}
-            name="availability"
-            render={({ field }) => (
-              <FormItem className="space-y-4">
-                <FormLabel>Time Slot Preferences</FormLabel>
-                <FormControl>
-                  <div className="space-y-4">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value?.length > 0 ? (
-                            <span>{field.value.length} time slots selected</span>
-                          ) : (
-                            <span>Select time slots</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="multiple"
-                          selected={field.value?.map(slot => slot.date) || []}
-                          onSelect={(dates) => {
-                            if (!dates) return;
-                            // Keep existing time selections for dates that are still selected
-                            const existingSlots = field.value?.filter(slot =>
-                              dates.some(d => format(d, 'yyyy-MM-dd') === format(slot.date, 'yyyy-MM-dd'))
-                            ) || [];
-
-                            // Add new dates without time selections
-                            const newDates = dates.filter(date =>
-                              !field.value?.some(slot => format(slot.date, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))
-                            ) || [];
-
-                            field.onChange([
-                              ...existingSlots,
-                              ...newDates.map(date => ({ date, times: [] }))
-                            ]);
-                          }}
-                          disabled={(date) => {
-                            const d = new Date(date);
-                            return d < new Date('2024-12-01') || d > new Date('2025-01-15');
-                          }}
-                          className="rounded-md border"
-                        />
-
-                        <div className="max-h-[300px] overflow-y-auto">
-                          {field.value?.map((slot, index) => (
-                            <div key={format(slot.date, 'yyyy-MM-dd')} className="p-3 border-t">
-                              <h4 className="font-medium mb-2">
-                                {format(slot.date, 'EEEE, MMMM d, yyyy')}
-                              </h4>
-                              <div className="grid grid-cols-4 gap-2">
-                                {TIME_OPTIONS.map((time) => (
-                                  <label
-                                    key={time}
-                                    className="flex items-center space-x-2"
-                                  >
-                                    <Checkbox
-                                      checked={slot.times.includes(time)}
-                                      onCheckedChange={(checked) => {
-                                        const newValue = [...(field.value || [])];
-                                        if (checked) {
-                                          newValue[index].times = [...slot.times, time];
-                                        } else {
-                                          newValue[index].times = slot.times.filter(t => t !== time);
-                                        }
-                                        field.onChange(newValue);
-                                      }}
-                                    />
-                                    <span className="text-sm">{time}</span>
-                                  </label>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </FormControl>
-                <FormDescription>
-                  Select dates between Dec 1, 2024 and Jan 15, 2025, then choose available times
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

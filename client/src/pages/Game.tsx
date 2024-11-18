@@ -263,14 +263,14 @@ function GameComponent() {
             <CardContent>
               <div className="space-y-4">
                 {leaderboard?.map((score, index) => (
-                  <div key={score.id} className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold">{index + 1}.</span>
+                  <div key={score.id} className="flex flex-col gap-2 p-2 border-b">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold">#{index + 1}</span>
                       <span>{score.distance.toFixed(2)} km</span>
                     </div>
-                    <span className="text-sm text-gray-500">
-                      {score.attempts} attempts
-                    </span>
+                    <div className="text-sm text-gray-500">
+                      Attempt #{score.attempts}
+                    </div>
                   </div>
                 ))}
               </div>

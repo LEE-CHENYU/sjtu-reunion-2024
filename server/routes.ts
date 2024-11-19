@@ -9,19 +9,14 @@ export function registerRoutes(app: Express) {
   // Survey routes
   app.post("/api/survey", async (req, res) => {
     try {
-      console.log("Received survey data:", req.body);
-
       const validatedData = insertSurveySchema.parse({
         ...req.body,
-        availability: req.body.availability // Keep as array
+        availability: req.body.availability
       });
 
       const result = await db.insert(surveys).values(validatedData).returning();
-      console.log("Inserted survey:", result);
-
       res.json(result[0]);
     } catch (error) {
-      console.error("Survey submission error:", error);
       res.status(400).json({ 
         message: error instanceof Error ? error.message : "Failed to submit survey",
         details: error

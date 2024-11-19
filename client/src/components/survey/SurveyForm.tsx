@@ -87,18 +87,17 @@ interface SurveyFormProps {
 
 type EventType = typeof EVENT_TYPES[number]["id"];
 type VenueType = typeof VENUES[number]["id"];
+type StatusType = typeof CURRENT_STATUS[number]["value"];
 
 interface FormValues extends Omit<Survey, 'availability'> {
   availability: TimeSlot[];
 }
 
-// Define the time slot type
 const timeSlotSchema = z.object({
   date: z.date(),
   times: z.array(z.string())
 });
 
-// Client-side schema that accepts array for availability
 const clientSurveySchema = z.object({
   email: z.string().email("Invalid email address"),
   budget: z.number().min(30, "Budget must be at least $30").max(200, "Budget cannot exceed $200"),
@@ -107,11 +106,10 @@ const clientSurveySchema = z.object({
   needsCouchSurfing: z.boolean(),
   eventTypes: z.array(z.string()).min(1, "Select at least one event type"),
   venue: z.array(z.string()).min(1, "Select at least one venue"),
-  academicStatus: z.string().min(1, "Academic status is required"),
-  // Accept array for client-side validation
+  academicStatus: z.enum(["masters", "phd", "working", "startup", "enjoying"] as const),
   availability: z.array(timeSlotSchema).min(1, "Select at least one time slot"),
   dietaryRestrictions: z.string().optional(),
-  alcoholPreferences: z.string().min(1, "Alcohol preference is required"),
+  alcoholPreferences: z.enum(["none", "beer_wine", "full_bar", "byob"] as const)
 });
 
 export function SurveyForm({ onComplete }: SurveyFormProps) {
@@ -129,23 +127,23 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
       needsCouchSurfing: false,
       eventTypes: [],
       venue: [],
-      academicStatus: "",
-      availability: [], // Initialize as empty array
+      academicStatus: "masters",
+      availability: [],
       dietaryRestrictions: "",
       alcoholPreferences: "none",
     },
+    mode: "onChange"
   });
 
   const onSubmit = async (data: FormValues) => {
     try {
       setIsSubmitting(true);
       
-      // Format the data before submission
       const formattedData = {
         ...data,
         availability: data.availability.map(slot => ({
           ...slot,
-          date: new Date(slot.date) // Ensure date is properly converted
+          date: new Date(slot.date)
         }))
       };
 
@@ -167,6 +165,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
       });
 
       onComplete();
+      navigate("/community");
     } catch (error) {
       toast({
         title: "Error 😕",
@@ -190,11 +189,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
 
   return (
     <Form {...form}>
-      <form 
-        onSubmit={form.handleSubmit(onSubmit)} 
-        className="space-y-8"
-        noValidate
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" noValidate>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -331,9 +326,9 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                     >
                       <FormControl>
                         <Checkbox
-                          checked={field.value.includes(type.id)}
+                          checked={field.value?.includes(type.id)}
                           onCheckedChange={(checked) => {
-                            const current = field.value;
+                            const current = field.value || [];
                             const updated = checked
                               ? [...current, type.id]
                               : current.filter((value) => value !== type.id);
@@ -352,7 +347,6 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             )}
           />
 
-          {/* Rest of the form fields... */}
           {/* Venue Preferences Field */}
           <FormField
             control={form.control}
@@ -368,9 +362,9 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                     >
                       <FormControl>
                         <Checkbox
-                          checked={field.value.includes(venue.id)}
+                          checked={field.value?.includes(venue.id)}
                           onCheckedChange={(checked) => {
-                            const current = field.value;
+                            const current = field.value || [];
                             const updated = checked
                               ? [...current, venue.id]
                               : current.filter((value) => value !== venue.id);
@@ -396,7 +390,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Current Status</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select your status" />
@@ -467,45 +461,10 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                           }}
                           className="rounded-md border"
                         />
-
-                        <div className="max-h-[300px] overflow-y-auto">
-                          {field.value?.map((slot, index) => (
-                            <div key={format(slot.date, 'yyyy-MM-dd')} className="p-3 border-t">
-                              <h4 className="font-medium mb-2">
-                                {format(slot.date, 'EEEE, MMMM d, yyyy')}
-                              </h4>
-                              <div className="grid grid-cols-4 gap-2">
-                                {TIME_OPTIONS.map((time) => (
-                                  <label
-                                    key={time}
-                                    className="flex items-center space-x-2"
-                                  >
-                                    <Checkbox
-                                      checked={slot.times.includes(time)}
-                                      onCheckedChange={(checked) => {
-                                        const newValue = [...(field.value || [])];
-                                        if (checked) {
-                                          newValue[index].times = [...slot.times, time];
-                                        } else {
-                                          newValue[index].times = slot.times.filter(t => t !== time);
-                                        }
-                                        field.onChange(newValue);
-                                      }}
-                                    />
-                                    <span className="text-sm">{time}</span>
-                                  </label>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
                       </PopoverContent>
                     </Popover>
                   </div>
                 </FormControl>
-                <FormDescription>
-                  Select dates between Dec 1, 2024 and Jan 15, 2025, then choose available times
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -520,9 +479,8 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                 <FormLabel>Dietary Restrictions</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Enter any dietary restrictions..."
+                    placeholder="Any dietary restrictions or preferences..."
                     {...field}
-                    value={field.value || ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -537,52 +495,34 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Alcohol Preferences</FormLabel>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    className="grid grid-cols-2 gap-4"
-                  >
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select alcohol preference" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
                     {ALCOHOL_PREFERENCES.map((pref) => (
-                      <FormItem
-                        key={pref.id}
-                        className="flex items-center space-x-2"
-                      >
-                        <FormControl>
-                          <RadioGroupItem value={pref.id} />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          {pref.label}
-                        </FormLabel>
-                      </FormItem>
+                      <SelectItem key={pref.id} value={pref.id}>
+                        {pref.label}
+                      </SelectItem>
                     ))}
-                  </RadioGroup>
-                </FormControl>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
+        </motion.div>
 
-          {/* Add error display */}
-          {Object.keys(form.formState.errors).length > 0 && (
-            <div className="text-red-500 text-sm p-4 bg-red-50 rounded-md">
-              <p className="font-medium">Please fix the following errors:</p>
-              <ul className="list-disc pl-5 mt-2">
-                {Object.entries(form.formState.errors).map(([key, error]) => (
-                  <li key={key}>{error.message}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <Button 
-            type="submit" 
+        <motion.div variants={bounceHover} whileHover="hover">
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-md hover:shadow-lg transition-all duration-200"
             disabled={isSubmitting}
-            className="w-full"
           >
-            {isSubmitting ? "Submitting..." : "Submit Survey"}
+            {isSubmitting ? "Submitting..." : "Submit Survey 🚀"}
           </Button>
-
         </motion.div>
       </form>
     </Form>

@@ -158,7 +158,8 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Survey submission failed");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Survey submission failed");
       }
 
       toast({
@@ -166,11 +167,12 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
         description: "Your survey has been submitted.",
       });
 
+      form.reset();
       onComplete();
     } catch (error) {
       toast({
         title: "Error 😕",
-        description: "Failed to submit survey. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to submit survey. Please try again.",
         variant: "destructive",
       });
     } finally {

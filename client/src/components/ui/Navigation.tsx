@@ -3,14 +3,10 @@ import { Button } from "./button";
 import { useState } from "react";
 
 // Separate component for navigation links
-function NavigationLinks({ location, onSelect }: { location: string; onSelect?: () => void }) {
-  const handleClick = () => {
-    if (onSelect) onSelect();
-  };
-
+function NavigationLinks({ location }: { location: string }) {
   return (
     <>
-      <Link href="/survey" onClick={handleClick}>
+      <Link href="/survey">
         <Button
           variant={location === "/survey" ? "default" : "ghost"}
           className="text-white hover:bg-blue-800/30 w-full md:w-auto"
@@ -18,7 +14,7 @@ function NavigationLinks({ location, onSelect }: { location: string; onSelect?: 
           Survey 📝
         </Button>
       </Link>
-      <Link href="/community" onClick={handleClick}>
+      <Link href="/community">
         <Button
           variant={location === "/community" ? "default" : "ghost"}
           className="text-white hover:bg-blue-800/30 w-full md:w-auto"
@@ -26,7 +22,7 @@ function NavigationLinks({ location, onSelect }: { location: string; onSelect?: 
           Community 💬
         </Button>
       </Link>
-      <Link href="/dashboard" onClick={handleClick}>
+      <Link href="/dashboard">
         <Button
           variant={location === "/dashboard" ? "default" : "ghost"}
           className="text-white hover:bg-blue-800/30 w-full md:w-auto"
@@ -34,7 +30,7 @@ function NavigationLinks({ location, onSelect }: { location: string; onSelect?: 
           Dashboard 📊
         </Button>
       </Link>
-      <Link href="/game" onClick={handleClick}>
+      <Link href="/game">
         <Button
           variant={location === "/game" ? "default" : "ghost"}
           className="text-white hover:bg-blue-800/30 w-full md:w-auto"
@@ -54,7 +50,7 @@ export function Navigation() {
     <nav className="fixed top-0 left-0 right-0 bg-blue-900/20 backdrop-blur-sm z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" onClick={() => setIsMenuOpen(false)}>
+          <Link href="/">
             <Button variant="ghost" className="text-white hover:bg-blue-800/30">
               🎈 SJTU Reunion
             </Button>
@@ -81,7 +77,7 @@ export function Navigation() {
         {isMenuOpen && (
           <div className="md:hidden pb-4">
             <div className="flex flex-col space-y-2">
-              <NavigationLinks location={location} onSelect={() => setIsMenuOpen(false)} />
+              <NavigationLinks location={location} />
             </div>
           </div>
         )}

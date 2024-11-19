@@ -1,13 +1,13 @@
-import { pgTable, text, serial, timestamp, boolean, numeric } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, timestamp, boolean, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const surveys = pgTable("surveys", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   email: text("email").notNull(),
-  budget: numeric("budget").notNull(),
+  budget: integer("budget").notNull(),
   location: text("location").notNull(),
-  transportation: text("transportation"),
+  transportation: text("transportation").notNull(),
   needsCouchSurfing: boolean("needs_couch_surfing").default(false),
   eventTypes: text("event_types").array().notNull(),
   venue: text("venue").array().notNull(),
@@ -19,7 +19,7 @@ export const surveys = pgTable("surveys", {
 });
 
 export const posts = pgTable("posts", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   title: text("title").notNull(),
   content: text("content").notNull(),
   authorId: text("author_id").notNull(),
@@ -28,25 +28,25 @@ export const posts = pgTable("posts", {
 });
 
 export const comments = pgTable("comments", {
-  id: serial("id").primaryKey(),
-  postId: numeric("post_id").notNull(),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  postId: integer("post_id").notNull(),
   content: text("content").notNull(),
   authorId: text("author_id").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-  parentId: numeric("parent_id"),
+  parentId: integer("parent_id"),
 });
 
 export const reactions = pgTable("reactions", {
-  id: serial("id").primaryKey(),
-  postId: numeric("post_id").notNull(),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  postId: integer("post_id").notNull(),
   emoji: text("emoji").notNull(),
   authorId: text("author_id").notNull(),
 });
 
 export const game_scores = pgTable("game_scores", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   distance: numeric("distance").notNull(),
-  attempts: numeric("attempts").notNull(),
+  attempts: integer("attempts").notNull(),
   created_at: timestamp("created_at").defaultNow()
 });
 

@@ -143,20 +143,24 @@ function GameComponent() {
   console.log('Leaderboard data:', leaderboard);
 
   return (
-    <div className="min-h-screen p-8 pt-20 bg-gradient-to-br from-blue-400 to-blue-600">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-7xl mx-auto"
-      >
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 animate-gradient">
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 -left-1/4 w-1/2 h-1/2 bg-white/20 rounded-full filter blur-3xl animate-blob" />
+          <div className="absolute top-1/4 -right-1/4 w-1/2 h-1/2 bg-blue-300/20 rounded-full filter blur-3xl animate-blob animation-delay-2000" />
+        </div>
+      </div>
+
+      <div className="container relative mx-auto px-4 py-20">
         <div className="text-white mb-8">
-          <h1 className="text-4xl font-bold mb-4">SJTU Campus Explorer 🎯</h1>
-          <p className="text-lg mb-2">Find 拖鞋门 (Slipper Gate) on the map!</p>
+          <h1 className="text-4xl font-bold mb-4 drop-shadow-lg">SJTU Campus Explorer 🎯</h1>
+          <p className="text-lg mb-2 text-white/90">Find 拖鞋门 (Slipper Gate) on the map!</p>
           <p className="text-sm opacity-80">Click anywhere on the map to make your guess. How close can you get?</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <Card>
+          <Card className="glass-card">
             <CardHeader>
               <CardTitle>Attempts</CardTitle>
             </CardHeader>
@@ -165,7 +169,7 @@ function GameComponent() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card">
             <CardHeader>
               <CardTitle>Current Distance</CardTitle>
             </CardHeader>
@@ -176,7 +180,7 @@ function GameComponent() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card">
             <CardHeader>
               <CardTitle>Best Distance</CardTitle>
             </CardHeader>
@@ -187,7 +191,7 @@ function GameComponent() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card">
             <CardHeader>
               <CardTitle>Status</CardTitle>
             </CardHeader>
@@ -201,7 +205,7 @@ function GameComponent() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="md:col-span-3">
-            <Card>
+            <Card className="glass-card">
               <CardContent className="p-0">
                 <div className="h-[600px] rounded-lg overflow-hidden">
                   <MapContainer
@@ -268,7 +272,7 @@ function GameComponent() {
             </div>
           </div>
 
-          <Card>
+          <Card className="glass-card">
             <CardHeader>
               <CardTitle>Leaderboard 🏆</CardTitle>
             </CardHeader>
@@ -382,7 +386,7 @@ function GameComponent() {
             </CardContent>
           </Card>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

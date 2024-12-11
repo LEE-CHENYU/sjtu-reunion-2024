@@ -70,11 +70,11 @@ export function Navigation() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-blue-900/20 backdrop-blur-sm z-50 shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 glass-dark z-50 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link href="/" onClick={handleNavClick}>
-            <Button variant="ghost" className="text-white hover:bg-blue-800/30">
+            <Button variant="ghost" className="text-white hover:bg-white/10 transition-all font-semibold">
               🎈 SJTU Reunion
             </Button>
           </Link>
@@ -82,7 +82,7 @@ export function Navigation() {
           <div className="md:hidden">
             <Button
               variant="ghost"
-              className="text-white hover:bg-blue-800/30"
+              className="text-white hover:bg-white/10 transition-all"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               ☰
@@ -97,8 +97,8 @@ export function Navigation() {
 
         {/* Mobile navigation */}
         {isMenuOpen && (
-          <div className="md:hidden pb-4">
-            <div className="flex flex-col space-y-2">
+          <div className="md:hidden pb-4 glass-dark mt-2 rounded-lg border border-white/10">
+            <div className="flex flex-col space-y-2 p-4">
               <NavigationLinks location={location} onClick={handleNavClick} />
             </div>
           </div>

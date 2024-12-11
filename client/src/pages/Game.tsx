@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import useSWR, { mutate } from "swr";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 // Target location coordinates
 const TARGET_LOCATION = {
@@ -25,8 +26,8 @@ interface GameState {
 
 interface Score {
   id: number;
-  distance: number;
-  attempts: number;
+  distance: string;
+  attempts: string;
   created_at: string;
 }
 
@@ -76,28 +77,36 @@ function GameComponent() {
   const handleSubmitGuess = async () => {
     if (!gameState.guessPosition) return;
 
-    const distance = calculateDistance(gameState.guessPosition, TARGET_LOCATION);
-    const attempts = gameState.attempts + 1;
-    const bestDistance = Math.min(distance, gameState.bestDistance);
+    try {
+      const distance = calculateDistance(gameState.guessPosition, TARGET_LOCATION);
+      const attempts = gameState.attempts + 1;
+      const bestDistance = Math.min(distance, gameState.bestDistance);
 
-    // Save score to the database
-    await fetch("/api/game/score", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ distance, attempts }),
-    });
+      // Ensure we're sending numeric types
+      const scoreData = {
+        distance: Number(distance.toFixed(2)),
+        attempts: attempts
+      };
 
-    // Update leaderboard
-    mutate("/api/game/leaderboard");
+      await fetch("/api/game/score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(scoreData),
+      });
 
-    setGameState(prev => ({
-      ...prev,
-      distance,
-      attempts,
-      bestDistance,
-      isGameOver: true,
-      showTarget: true,
-    }));
+      setGameState(prev => ({
+        ...prev,
+        distance,
+        attempts,
+        bestDistance,
+        isGameOver: true,
+        showTarget: true,
+      }));
+
+      mutate("/api/game/leaderboard");
+    } catch (error) {
+      console.error("Error submitting score:", error);
+    }
   };
 
   const handleTryAgain = () => {
@@ -129,6 +138,9 @@ function GameComponent() {
     popupAnchor: [1, -34],
     shadowSize: [41, 41]
   });
+
+  // Add this at the top level of your component to debug
+  console.log('Leaderboard data:', leaderboard);
 
   return (
     <div className="min-h-screen p-8 pt-20 bg-gradient-to-br from-blue-400 to-blue-600">
@@ -261,19 +273,112 @@ function GameComponent() {
               <CardTitle>Leaderboard 🏆</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {leaderboard?.map((score, index) => (
-                  <div key={score.id} className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold">{index + 1}.</span>
-                      <span>{score.distance.toFixed(2)} km</span>
-                    </div>
-                    <span className="text-sm text-gray-500">
-                      {score.attempts} attempts
-                    </span>
-                  </div>
-                ))}
-              </div>
+              {leaderboard && leaderboard.length > 0 ? (
+                <Tabs defaultValue="all" className="w-full">
+                  <TabsList className="grid w-full auto-cols-fr grid-flow-col gap-2 mb-4 p-1 h-auto">
+                    <TabsTrigger 
+                      value="all" 
+                      className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 px-3 py-2"
+                    >
+                      All
+                    </TabsTrigger>
+                    {Object.keys(
+                      leaderboard.reduce((acc, score) => {
+                        if (parseInt(score.attempts) <= 3) {
+                          acc[score.attempts] = true;
+                        }
+                        return acc;
+                      }, {} as Record<number, boolean>)
+                    )
+                    .sort((a, b) => parseInt(a) - parseInt(b))
+                    .map((attempts) => (
+                      <TabsTrigger 
+                        key={attempts} 
+                        value={attempts}
+                        className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 px-3 py-2 whitespace-nowrap"
+                      >
+                        {attempts} {parseInt(attempts) === 1 ? 'Try' : 'Tries'}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+
+                  <TabsContent value="all" className="space-y-6">
+                    {Object.entries(
+                      leaderboard.reduce((acc, score) => {
+                        const key = score.attempts.toString();
+                        if (parseInt(key) <= 3) {
+                          if (!acc[key]) acc[key] = [];
+                          acc[key].push(score);
+                        }
+                        return acc;
+                      }, {} as Record<string, typeof leaderboard>)
+                    )
+                    .sort(([a], [b]) => parseInt(a) - parseInt(b))
+                    .map(([attempts, scores]) => (
+                      <div key={attempts} className="space-y-2">
+                        <h3 className="text-sm font-semibold text-gray-500 border-b pb-2">
+                          {attempts} {parseInt(attempts) === 1 ? 'Attempt' : 'Attempts'}
+                        </h3>
+                        <div className="space-y-3">
+                          {scores
+                            .sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance))
+                            .slice(0, 3)
+                            .map((score, index) => (
+                              <div 
+                                key={score.id} 
+                                className="flex justify-between items-center p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <span className="font-bold text-gray-500 w-6">{index + 1}.</span>
+                                  <span className="font-medium">
+                                    {parseFloat(score.distance).toFixed(2)} km
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    ))}
+                  </TabsContent>
+
+                  {Object.entries(
+                    leaderboard.reduce((acc, score) => {
+                      const key = score.attempts.toString();
+                      if (parseInt(key) <= 3) {
+                        if (!acc[key]) acc[key] = [];
+                        acc[key].push(score);
+                      }
+                      return acc;
+                    }, {} as Record<string, typeof leaderboard>)
+                  )
+                  .sort(([a], [b]) => parseInt(a) - parseInt(b))
+                  .map(([attempts, scores]) => (
+                    <TabsContent key={attempts} value={attempts} className="space-y-3">
+                      {scores
+                        .sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance))
+                        .slice(0, 3)
+                        .map((score, index) => (
+                          <div 
+                            key={score.id} 
+                            className="flex justify-between items-center p-3 rounded-lg bg-gray-50/50 hover:bg-gray-100/50 transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="font-bold text-gray-500 w-6">{index + 1}.</span>
+                              <span className="font-medium">
+                                {parseFloat(score.distance).toFixed(2)} km
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No scores yet</p>
+                  <p className="text-sm mt-1">Be the first to play!</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -281,7 +386,6 @@ function GameComponent() {
     </div>
   );
 }
-
 export default function Game() {
   return (
     <ErrorBoundary>

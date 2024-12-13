@@ -20,7 +20,7 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center text-white w-full"
         >
-          <h1 className="text-6xl font-bold mb-8 drop-shadow-lg">✨ SJTU北美互助会2024 Reunion</h1>
+          <h1 className="text-6xl font-bold mb-8 drop-shadow-lg">✨ SJTU北美互助会2025 Reunion</h1>
           <p className="text-xl mb-12 text-white/90">Join us for the SJTU North America Alumni reunion and help shape our gathering!</p>
           
           <div className="flex gap-6 justify-center">

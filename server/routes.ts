@@ -251,6 +251,21 @@ export function registerRoutes(app: Express) {
       res.status(500).json({ error: "Failed to add reaction" });
     }
   });
+
+  app.get("/api/health", async (req, res) => {
+    try {
+      // Try a simple query
+      const result = await db.select().from(surveys).limit(1);
+      res.json({ status: "healthy", dbConnected: true });
+    } catch (error) {
+      console.error("Database connection error:", error);
+      res.status(500).json({ 
+        status: "error", 
+        dbConnected: false, 
+        error: error.message 
+      });
+    }
+  });
 }
 
 // Helper functions to map values to display labels

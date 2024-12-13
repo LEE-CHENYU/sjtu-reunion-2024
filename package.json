@@ -7,7 +7,10 @@
     "dev": "tsx watch --clear-screen=false --exclude vite.config.ts.* server/index.ts",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "NODE_ENV=production node dist/index.js",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push --strict",
+    "db:push:force": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx db/migrate.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -41,6 +44,7 @@
     "@radix-ui/react-tooltip": "^1.1.3",
     "@replit/vite-plugin-shadcn-theme-json": "^0.0.3",
     "@types/leaflet": "^1.9.14",
+    "@types/pg": "^8.11.10",
     "canvas-confetti": "^1.9.3",
     "chart.js": "^4.4.6",
     "class-variance-authority": "^0.7.0",
@@ -61,6 +65,8 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "pg": "^8.13.1",
+    "pg-native": "^3.2.0",
+    "postgres": "^3.4.5",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.2.0",
     "react-day-picker": "^8.10.1",

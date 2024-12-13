@@ -15,7 +15,7 @@ interface PostListProps {
 }
 
 export function PostList({ scrollProgress }: PostListProps) {
-  const { data: posts, mutate } = useSWR<Post[]>("/api/posts", {
+  const { data: posts, mutate } = useSWR<PostWithDetails[]>("/api/posts", {
     refreshInterval: 2000,
     revalidateOnFocus: true,
     refreshWhenHidden: false,
@@ -91,10 +91,11 @@ export function PostList({ scrollProgress }: PostListProps) {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className="p-6 hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02]">
+            <Card className="p-6 hover:shadow-lg transition-all duration-300">
               <h3 className="text-xl font-bold mb-2">{post.title}</h3>
               <p className="text-gray-600 mb-4">{post.content}</p>
 
+              {/* Reactions */}
               <div className="flex gap-2 mb-4">
                 {EMOJI_REACTIONS.map((emoji) => (
                   <motion.div
@@ -108,55 +109,67 @@ export function PostList({ scrollProgress }: PostListProps) {
                       onClick={() => addReaction(post.id, emoji)}
                       className="transition-colors duration-200"
                     >
-                      {emoji}
+                      {emoji} {post.reactions?.filter(r => r.emoji === emoji).length || 0}
                     </Button>
                   </motion.div>
                 ))}
               </div>
 
-              <motion.div 
-                className="space-y-4"
-                initial={false}
-                animate={{ height: activeComment === post.id ? "auto" : "40px" }}
-                transition={{ duration: 0.3 }}
-              >
-                {activeComment === post.id ? (
-                  <div className="space-y-2">
-                    <Textarea
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      placeholder="Write a comment..."
-                      className="w-full transition-all duration-200 focus:shadow-lg"
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => addComment(post.id)}
-                        className="transition-colors duration-200"
-                      >
-                        Post Comment
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setActiveComment(null)}
-                        className="transition-colors duration-200"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
+              {/* Comments Section */}
+              <div className="space-y-4">
+                {post.comments?.map((comment) => (
+                  <div key={comment.id} className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-sm text-gray-600">{comment.content}</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {new Date(comment.createdAt!).toLocaleDateString()}
+                    </p>
                   </div>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setActiveComment(post.id)}
-                    className="transition-colors duration-200"
-                  >
-                    Add Comment 💭
-                  </Button>
-                )}
-              </motion.div>
+                ))}
+
+                <motion.div 
+                  className="space-y-4"
+                  initial={false}
+                  animate={{ height: activeComment === post.id ? "auto" : "40px" }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {activeComment === post.id ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={commentText}
+                        onChange={(e) => setCommentText(e.target.value)}
+                        placeholder="Write a comment..."
+                        className="w-full transition-all duration-200 focus:shadow-lg"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => addComment(post.id)}
+                          className="transition-colors duration-200"
+                        >
+                          Post Comment
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setActiveComment(null)}
+                          className="transition-colors duration-200"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setActiveComment(post.id)}
+                      className="transition-colors duration-200"
+                    >
+                      Add Comment 💭 {post.comments?.length ? `(${post.comments.length})` : ''}
+                    </Button>
+                  )}
+                </motion.div>
+              </div>
             </Card>
           </motion.div>
         ))}

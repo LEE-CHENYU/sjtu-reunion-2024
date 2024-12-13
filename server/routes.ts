@@ -212,8 +212,14 @@ export function registerRoutes(app: Express) {
   // Community routes
   app.get("/api/posts", async (req, res) => {
     try {
-      const allPosts = await db.select().from(posts).orderBy(posts.createdAt);
-      res.json(allPosts);
+      const postsWithDetails = await db.query.posts.findMany({
+        with: {
+          comments: true,
+          reactions: true
+        },
+        orderBy: (posts, { desc }) => [desc(posts.createdAt)]
+      });
+      res.json(postsWithDetails);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch posts" });
     }

@@ -33,6 +33,14 @@ export function CreatePost({ onPostCreated }: { onPostCreated: () => void }) {
   });
 
   const onSubmit = async (data: Post) => {
+    if (!data.title.trim() || !data.content.trim()) {
+      toast({
+        title: "Error",
+        description: "Title and content cannot be empty",
+        variant: "destructive"
+      });
+      return;
+    }
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/posts", {

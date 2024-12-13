@@ -46,8 +46,14 @@ export function PostList({ scrollProgress }: PostListProps) {
   };
 
   const addComment = async (postId: number) => {
-    if (!commentText.trim()) return;
-    
+    if (!commentText.trim()) {
+      toast({
+        title: "Error",
+        description: "Comment cannot be empty",
+        variant: "destructive"
+      });
+      return;
+    }
     try {
       await fetch("/api/comments", {
         method: "POST",

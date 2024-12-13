@@ -229,7 +229,8 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="multiple"
-                          selected={field.value?.map(slot => slot.date) || []}
+                          defaultMonth={new Date('2025-01-25')}
+                          selected={field.value?.map(slot => new Date(slot.date)) || []}
                           onSelect={(dates) => {
                             if (!dates) return;
                             const existingSlots = field.value?.filter(slot =>
@@ -247,7 +248,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                           }}
                           disabled={(date) => {
                             const d = new Date(date);
-                            return d < new Date('2024-01-25') || d > new Date('2024-02-23');
+                            return d < new Date('2025-01-25') || d > new Date('2025-02-23');
                           }}
                         />
                         <div className="max-h-[300px] overflow-y-auto">

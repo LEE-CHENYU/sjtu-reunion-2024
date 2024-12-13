@@ -247,7 +247,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                           }}
                           disabled={(date) => {
                             const d = new Date(date);
-                            return d < new Date('2024-12-01') || d > new Date('2025-01-15');
+                            return d < new Date('2024-01-25') || d > new Date('2024-02-23');
                           }}
                         />
                         <div className="max-h-[300px] overflow-y-auto">
@@ -286,7 +286,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                   </div>
                 </FormControl>
                 <FormDescription>
-                  Select dates between Dec 1, 2024 and Jan 15, 2025, then choose available times
+                  Select dates between Jan 25, 2024 and Feb 23, 2024, then choose available times
                 </FormDescription>
                 <FormMessage />
               </FormItem>

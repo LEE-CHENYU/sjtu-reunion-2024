@@ -248,7 +248,7 @@ export function SurveyForm({ onComplete }: SurveyFormProps) {
                           }}
                           disabled={(date) => {
                             const d = new Date(date);
-                            return d < new Date('2025-01-25') || d > new Date('2025-02-23');
+                            return d < new Date('2025-01-25') || d > new Date('2025-02-23 23:59:59');
                           }}
                         />
                         <div className="max-h-[300px] overflow-y-auto">

@@ -1,6 +1,7 @@
 import { pgTable, text, integer, timestamp, boolean, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+import { relations } from "drizzle-orm";
 
 export const surveys = pgTable("surveys", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
@@ -29,7 +30,7 @@ export const posts = pgTable("posts", {
 
 export const comments = pgTable("comments", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  postId: integer("post_id").notNull(),
+  postId: integer("post_id").notNull().references(() => posts.id),
   content: text("content").notNull(),
   authorId: text("author_id").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -38,7 +39,7 @@ export const comments = pgTable("comments", {
 
 export const reactions = pgTable("reactions", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  postId: integer("post_id").notNull(),
+  postId: integer("post_id").notNull().references(() => posts.id),
   emoji: text("emoji").notNull(),
   authorId: text("author_id").notNull(),
 });
@@ -134,3 +135,23 @@ export type Survey = z.infer<typeof insertSurveySchema>;
 export type Post = z.infer<typeof selectPostSchema>;
 export type Comment = z.infer<typeof selectCommentSchema>;
 export type Reaction = z.infer<typeof selectReactionSchema>;
+
+// Define relationships
+export const postsRelations = relations(posts, ({ many }) => ({
+  comments: many(comments),
+  reactions: many(reactions),
+}));
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  post: one(posts, {
+    fields: [comments.postId],
+    references: [posts.id],
+  }),
+}));
+
+export const reactionsRelations = relations(reactions, ({ one }) => ({
+  post: one(posts, {
+    fields: [reactions.postId],
+    references: [posts.id],
+  }),
+}));

@@ -212,6 +212,7 @@ export function registerRoutes(app: Express) {
   // Community routes
   app.get("/api/posts", async (req, res) => {
     try {
+      console.log("Attempting to fetch posts from database");
       const postsWithDetails = await db.query.posts.findMany({
         with: {
           comments: true,
